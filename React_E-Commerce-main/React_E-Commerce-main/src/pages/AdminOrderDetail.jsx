@@ -8,6 +8,10 @@ const AdminOrderDetail = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [shippingConfig, setShippingConfig] = useState({
+    SHIPPING_THRESHOLD: 2000000,
+    SHIPPING_FEE: 35000
+  });
 
   const fetchOrderDetail = async () => {
     try {
@@ -21,7 +25,23 @@ const AdminOrderDetail = () => {
     }
   };
 
-  useEffect(() => { fetchOrderDetail(); }, [id]);
+  useEffect(() => { 
+    fetchOrderDetail(); 
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get("http://localhost:8080/api/settings");
+        if (res.data) {
+          setShippingConfig({
+            SHIPPING_THRESHOLD: parseInt(res.data.FREE_SHIPPING_THRESHOLD) || 2000000,
+            SHIPPING_FEE: parseInt(res.data.SHIPPING_FEE) || 35000
+          });
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy cài đặt phí vận chuyển:", error);
+      }
+    };
+    fetchSettings();
+  }, [id]);
 
   const handleUpdateStatus = async (newStatus) => {
     const loadingToast = toast.loading("Đang cập nhật...");
@@ -38,6 +58,8 @@ const AdminOrderDetail = () => {
   // Status config
   const statusConfig = {
     PENDING:   { label: "Chờ xử lý",   icon: "fa-clock",         color: "#e6a700", bg: "rgba(255,193,7,0.12)" },
+    PAID:      { label: "Đã thanh toán", icon: "fa-money-check", color: "#28a745", bg: "rgba(40,167,69,0.12)" },
+    REFUND_PENDING: { label: "Yêu cầu hoàn tiền", icon: "fa-undo", color: "#fd7e14", bg: "rgba(253,126,20,0.12)" },
     CONFIRMED: { label: "Đã xác nhận", icon: "fa-clipboard-check", color: "#0069d9", bg: "rgba(0,123,255,0.12)" },
     SHIPPING:  { label: "Đang giao",   icon: "fa-shipping-fast", color: "#138496", bg: "rgba(23,162,184,0.12)" },
     DELIVERED: { label: "Hoàn tất",    icon: "fa-check-double",  color: "#218838", bg: "rgba(40,167,69,0.12)" },
@@ -73,15 +95,19 @@ const AdminOrderDetail = () => {
   ];
 
   const statusOrder = ["PENDING", "CONFIRMED", "SHIPPING", "DELIVERED"];
-  const currentIdx = statusOrder.indexOf(order.status === "SHIPPED" ? "DELIVERED" : order.status);
+  const currentIdx = statusOrder.indexOf(order.status === "SHIPPED" ? "DELIVERED" : (order.status === "PAID" ? "PENDING" : order.status));
   const isCancelled = order.status === "CANCELLED";
 
   // Next valid actions
   const getNextActions = () => {
     switch (order.status) {
-      case "PENDING": return [
+      case "PENDING":
+      case "PAID": return [
         { status: "CONFIRMED", label: "Xác nhận đơn", icon: "fa-check", gradient: "linear-gradient(135deg, #0069d9, #0085e0)", desc: "Xác nhận và trừ kho" },
         { status: "CANCELLED", label: "Hủy đơn hàng", icon: "fa-times", gradient: "linear-gradient(135deg, #c82333, #dc3545)", desc: "Hủy đơn hàng này", outline: true },
+      ];
+      case "REFUND_PENDING": return [
+        { status: "CANCELLED", label: "Xác nhận Đã Hoàn Tiền & Hủy Đơn", icon: "fa-check-circle", gradient: "linear-gradient(135deg, #c82333, #dc3545)", desc: "Xác nhận bạn đã hoàn tiền trên Momo và hủy đơn này" },
       ];
       case "CONFIRMED": return [
         { status: "SHIPPING", label: "Giao hàng", icon: "fa-truck", gradient: "linear-gradient(135deg, #138496, #17a2b8)", desc: "Chuyển cho đơn vị vận chuyển" },
@@ -168,61 +194,61 @@ const AdminOrderDetail = () => {
             </div>
           )}
 
-          {/* PRODUCTS TABLE */}
+          {/* PRODUCTS LIST PREMIUM */}
           <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '16px' }}>
-            <div className="card-header bg-white border-0 p-4 pb-0">
+            <div className="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
               <h6 className="fw-bold mb-0"><i className="fa fa-shopping-cart me-2" style={{ color: '#722f37' }}></i>Sản Phẩm ({order.items?.length || 0})</h6>
             </div>
-            <div className="table-responsive">
-              <table className="table align-middle mb-0">
-                <thead>
-                  <tr style={{ background: '#f8f9fa' }}>
-                    <th className="ps-4 py-3 border-0 text-muted small text-uppercase fw-semibold" style={{ fontSize: '11px' }}>Sản phẩm</th>
-                    <th className="text-center border-0 text-muted small text-uppercase fw-semibold" style={{ fontSize: '11px' }}>SL</th>
-                    <th className="text-end border-0 text-muted small text-uppercase fw-semibold" style={{ fontSize: '11px' }}>Đơn giá</th>
-                    <th className="text-end pe-4 border-0 text-muted small text-uppercase fw-semibold" style={{ fontSize: '11px' }}>Thành tiền</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {order.items?.map((item, i) => (
-                    <tr key={i} className="border-bottom">
-                      <td className="ps-4 py-3">
-                        <div className="d-flex align-items-center">
-                          <div className="d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(114,47,55,0.08)' }}>
-                            <i className="fa fa-wine-bottle" style={{ color: '#722f37' }}></i>
-                          </div>
-                          <div className="ms-3">
-                            <div className="fw-semibold text-dark" style={{ fontSize: '13px' }}>{item.name}</div>
-                            <small className="text-muted">ID: #{item.productId || item.wine?.id || 'N/A'}</small>
-                          </div>
+            <div className="card-body p-4">
+              <div className="d-flex flex-column gap-3">
+                {order.items?.map((item, i) => (
+                  <div key={i} className="d-flex align-items-center p-3 rounded-4" style={{ border: '1px solid #f0f0f0', transition: 'all 0.2s', background: '#fff', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
+                    <div className="d-flex align-items-center justify-content-center flex-shrink-0 bg-white" style={{ width: '80px', height: '80px', borderRadius: '12px', border: '1px solid #eaeaea', overflow: 'hidden' }}>
+                      {item.wine?.imageUrl ? (
+                        <img src={item.wine.imageUrl.startsWith('http') ? item.wine.imageUrl : `http://localhost:8080${item.wine.imageUrl}`} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '5px' }} />
+                      ) : (
+                        <div className="w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(114,47,55,0.05)' }}>
+                           <i className="fa fa-wine-bottle fs-3" style={{ color: '#722f37', opacity: 0.8 }}></i>
                         </div>
-                      </td>
-                      <td className="text-center">
-                        <span className="badge px-2 py-1" style={{ background: 'rgba(114,47,55,0.1)', color: '#722f37', borderRadius: '6px', fontSize: '12px' }}>x{item.quantity}</span>
-                      </td>
-                      <td className="text-end text-muted" style={{ fontSize: '13px' }}>{item.price?.toLocaleString()} đ</td>
-                      <td className="text-end pe-4 fw-bold" style={{ color: '#722f37', fontSize: '13px' }}>{(item.price * item.quantity).toLocaleString()} đ</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="card-footer bg-white border-0 p-4">
-              <div className="row justify-content-end">
-                <div className="col-md-5">
-                  <div className="d-flex justify-content-between mb-2 text-muted small">
-                    <span>Tạm tính:</span>
-                    <span className="fw-semibold text-dark">{(order.totalAmount - (order.totalAmount > 2000000 ? 0 : 35000)).toLocaleString()} đ</span>
+                      )}
+                    </div>
+                    <div className="ms-4 flex-grow-1">
+                      <div className="d-flex justify-content-between align-items-start mb-1">
+                        <div>
+                          <h6 className="fw-bold text-dark mb-1" style={{ fontSize: '15px' }}>{item.name}</h6>
+                          <small className="text-muted">ID: #{item.productId || item.wine?.id || 'N/A'}</small>
+                        </div>
+                        <div className="text-end">
+                           <span className="fw-bold fs-6" style={{ color: '#722f37' }}>{(item.price * item.quantity).toLocaleString()} đ</span>
+                        </div>
+                      </div>
+                      <div className="d-flex align-items-center mt-2">
+                        <span className="badge px-3 py-2" style={{ background: '#f8f9fa', color: '#555', border: '1px solid #ddd', fontSize: '12px', fontWeight: '600' }}>
+                           {item.price?.toLocaleString()} đ <span className="mx-1 text-muted fw-normal">x</span> {item.quantity}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="d-flex justify-content-between mb-3 pb-3 border-bottom text-muted small">
-                    <span>Phí giao:</span>
-                    <span className="fw-semibold" style={{ color: order.totalAmount > 2000000 ? '#218838' : '#722f37' }}>
-                      {order.totalAmount > 2000000 ? "Miễn phí" : "35.000 đ"}
+                ))}
+              </div>
+            </div>
+            
+            <div className="card-footer bg-white border-top p-4">
+              <div className="row justify-content-end">
+                <div className="col-md-6 col-lg-5">
+                  <div className="d-flex justify-content-between mb-3 small">
+                    <span className="text-muted">Tạm tính:</span>
+                    <span className="fw-semibold text-dark" style={{ fontSize: '14px' }}>{(order.totalAmount - (order.totalAmount > shippingConfig.SHIPPING_THRESHOLD ? 0 : shippingConfig.SHIPPING_FEE)).toLocaleString()} đ</span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-3 pb-3 border-bottom small">
+                    <span className="text-muted">Phí giao hàng:</span>
+                    <span className="fw-semibold" style={{ color: order.totalAmount > shippingConfig.SHIPPING_THRESHOLD ? '#218838' : '#722f37', fontSize: '14px' }}>
+                      {order.totalAmount > shippingConfig.SHIPPING_THRESHOLD ? "Miễn phí" : `${shippingConfig.SHIPPING_FEE.toLocaleString()} đ`}
                     </span>
                   </div>
-                  <div className="d-flex justify-content-between align-items-center p-3" style={{ background: 'linear-gradient(135deg, #722f37, #a04050)', borderRadius: '12px' }}>
-                    <span className="fw-bold text-white">TỔNG CỘNG</span>
-                    <span className="fw-bold text-white" style={{ fontSize: '1.25rem' }}>{order.totalAmount?.toLocaleString()} đ</span>
+                  <div className="d-flex justify-content-between align-items-center p-3 mt-3 shadow-sm" style={{ background: 'linear-gradient(135deg, #722f37, #a04050)', borderRadius: '12px' }}>
+                    <span className="fw-bold text-white text-uppercase" style={{ letterSpacing: '1px', fontSize: '13px' }}>Tổng Cộng</span>
+                    <span className="fw-bold text-white fs-4">{order.totalAmount?.toLocaleString()} <span className="fs-6">đ</span></span>
                   </div>
                 </div>
               </div>
@@ -247,18 +273,27 @@ const AdminOrderDetail = () => {
                   <span className="text-muted small">{order.customerEmail}</span>
                 </div>
               </div>
-
-              {[
-                { icon: "fa-phone", value: order.phone },
-                { icon: "fa-map-marker-alt", value: order.address },
-              ].map((info, i) => info.value && (
-                <div key={i} className="d-flex align-items-start mb-3 p-2">
+              <div className="mb-3">
+                <div className="d-flex align-items-start mb-3 p-2">
                   <div className="d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(114,47,55,0.08)' }}>
-                    <i className={`fa ${info.icon}`} style={{ color: '#722f37', fontSize: '13px' }}></i>
+                    <i className="fa fa-phone" style={{ color: '#722f37', fontSize: '13px' }}></i>
                   </div>
-                  <span className="ms-3 small text-dark">{info.value}</span>
+                  <span className="ms-3 small text-dark">{order.phone}</span>
                 </div>
-              ))}
+                <div className="d-flex align-items-start mb-3 p-2">
+                  <div className="d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(114,47,55,0.08)' }}>
+                    <i className="fa fa-map-marker-alt" style={{ color: '#722f37', fontSize: '13px' }}></i>
+                  </div>
+                  <span className="ms-3 small text-dark">{order.address}</span>
+                </div>
+                
+                {order.cancellationReason && (
+                  <div className="mt-3 p-3 text-dark border border-warning" style={{ fontSize: '13px', background: '#fff3cd', borderRadius: '8px' }}>
+                    <h6 className="fw-bold text-danger mb-1"><i className="fa fa-exclamation-triangle me-1"></i> Lý do hủy đơn:</h6>
+                    <span style={{ lineHeight: '1.5' }}>{order.cancellationReason}</span>
+                  </div>
+                )}
+              </div>
 
               {/* Note */}
               {(order.note || order.customerNote || order.orderNote) && (

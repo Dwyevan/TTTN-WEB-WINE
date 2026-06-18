@@ -5,7 +5,7 @@ function Home() {
     <>
       <Navbar />
       <Main />
-      <Product />
+      <Product isHome={true} />
       <Footer />
     </>
   )

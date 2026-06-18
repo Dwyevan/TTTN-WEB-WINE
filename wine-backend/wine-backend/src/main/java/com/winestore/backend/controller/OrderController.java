@@ -108,10 +108,23 @@ public class OrderController {
      */
     @GetMapping("/stats/revenue")
     public ResponseEntity<Double> getTotalRevenue() {
-        // Chúng ta inject OrderRepository trực tiếp hoặc qua Service. 
-        // Vì làm nhanh, có thể gọi orderService nếu có hàm, hoặc tạm để Service làm.
-        // Tôi sẽ sửa OrderService để trả về.
         Double revenue = orderService.getTotalRevenue();
         return ResponseEntity.ok(revenue != null ? revenue : 0.0);
+    }
+
+    /**
+     * KHÁCH HÀNG YÊU CẦU HỦY ĐƠN (POST)
+     */
+    @PostMapping("/user/{id}/cancel")
+    public ResponseEntity<?> requestCancelOrder(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
+        try {
+            String reason = body.get("reason");
+            Order updatedOrder = orderService.userCancelOrder(id, reason);
+            return ResponseEntity.ok(updatedOrder);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống");
+        }
     }
 }

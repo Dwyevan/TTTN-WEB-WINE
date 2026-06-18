@@ -69,7 +69,7 @@ public class OrderService {
         }
         
         // Hoàn kho khi hủy đơn đã bị trừ kho trước đó
-        boolean isCurrentDeducted = "PAID".equals(currentStatus) || "CONFIRMED".equals(currentStatus) || "SHIPPING".equals(currentStatus);
+        boolean isCurrentDeducted = "PAID".equals(currentStatus) || "CONFIRMED".equals(currentStatus) || "SHIPPING".equals(currentStatus) || "REFUND_PENDING".equals(currentStatus);
         if (isCurrentDeducted && "CANCELLED".equals(newStatus)) {
             restoreStockForOrder(order);
         }
@@ -99,7 +99,10 @@ public class OrderService {
                 valid = "CONFIRMED".equals(to) || "CANCELLED".equals(to) || "DELIVERED".equals(to) || "PAID".equals(to);
                 break;
             case "PAID":
-                valid = "CONFIRMED".equals(to) || "CANCELLED".equals(to);
+                valid = "CONFIRMED".equals(to) || "CANCELLED".equals(to) || "REFUND_PENDING".equals(to);
+                break;
+            case "REFUND_PENDING":
+                valid = "CANCELLED".equals(to);
                 break;
             case "CONFIRMED":
                 valid = "SHIPPING".equals(to) || "CANCELLED".equals(to);
@@ -225,8 +228,28 @@ public class OrderService {
         order.setItems(items);
 
         // 4. Lưu tất cả xuống DB
+        // 4. Lưu tất cả xuống DB
         return orderRepository.save(order);
     }
 
+    @Transactional
+    public Order userCancelOrder(Long id, String reason) {
+        Order order = orderRepository.findById(id).orElseThrow(
+            () -> new IllegalArgumentException("Không tìm thấy đơn hàng #" + id)
+        );
 
+        String currentStatus = order.getStatus();
+
+        if ("PENDING".equals(currentStatus)) {
+            order.setStatus("CANCELLED");
+            order.setCancellationReason(reason);
+        } else if ("PAID".equals(currentStatus)) {
+            order.setStatus("REFUND_PENDING");
+            order.setCancellationReason(reason);
+        } else {
+            throw new IllegalArgumentException("Chỉ có thể hủy đơn khi ở trạng thái Chờ xử lý hoặc Đã thanh toán.");
+        }
+
+        return orderRepository.save(order);
+    }
 }

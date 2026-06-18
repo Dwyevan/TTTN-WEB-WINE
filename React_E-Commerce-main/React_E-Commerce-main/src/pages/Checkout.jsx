@@ -26,6 +26,11 @@ const Checkout = () => {
     note: ""
   });
 
+  const [shippingConfig, setShippingConfig] = useState({
+    SHIPPING_THRESHOLD: 2000000,
+    SHIPPING_FEE: 35000
+  });
+
   useEffect(() => {
     if (user) {
       const names = user.fullName ? user.fullName.split(" ") : ["", ""];
@@ -38,6 +43,21 @@ const Checkout = () => {
         address: user.address || ""
       }));
     }
+
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get("http://localhost:8080/api/settings");
+        if (res.data) {
+          setShippingConfig({
+            SHIPPING_THRESHOLD: parseInt(res.data.FREE_SHIPPING_THRESHOLD) || 2000000,
+            SHIPPING_FEE: parseInt(res.data.SHIPPING_FEE) || 35000
+          });
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy cài đặt phí vận chuyển:", error);
+      }
+    };
+    fetchSettings();
   }, []);
 
   const handleInputChange = (e) => {
@@ -46,7 +66,7 @@ const Checkout = () => {
   };
 
   const subtotal = state.reduce((acc, item) => acc + (item.price * item.qty), 0);
-  const shipping = subtotal > 2000000 ? 0 : 35000;
+  const shipping = subtotal > shippingConfig.SHIPPING_THRESHOLD ? 0 : shippingConfig.SHIPPING_FEE;
   const totalAmount = subtotal + shipping;
 
   const handleSubmit = async (e) => {

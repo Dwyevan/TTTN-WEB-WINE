@@ -35,6 +35,9 @@ public class User {
     @Column(nullable = false)
     private String role = "CUSTOMER"; 
 
+    @Column(columnDefinition = "boolean default true")
+    private Boolean active = true;
+
     @Transient
     private String token;
 }

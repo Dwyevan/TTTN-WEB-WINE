@@ -1,7 +1,34 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const Footer = () => {
+  const [storeInfo, setStoreInfo] = useState({
+    STORE_NAME: 'Wine Store',
+    STORE_ADDRESS: '123 Đường Rượu Vang, Quận 1, TP. Hồ Chí Minh, Việt Nam',
+    STORE_PHONE: '0972.778.480',
+    STORE_EMAIL: 'contact@winestore.com'
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get("http://localhost:8080/api/settings");
+        if (res.data) {
+          setStoreInfo({
+            STORE_NAME: res.data.STORE_NAME || 'Wine Store',
+            STORE_ADDRESS: res.data.STORE_ADDRESS || '123 Đường Rượu Vang, Quận 1, TP. Hồ Chí Minh, Việt Nam',
+            STORE_PHONE: res.data.STORE_PHONE || '0972.778.480',
+            STORE_EMAIL: res.data.STORE_EMAIL || 'contact@winestore.com'
+          });
+        }
+      } catch (error) {
+        console.error("Lỗi tải thông tin cửa hàng:", error);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   return (
     <>
       <footer className="mt-5 pt-5 pb-4" style={{ background: '#1a1a1a', color: '#e0e0e0', borderTop: '4px solid #722f37' }}>
@@ -9,7 +36,7 @@ const Footer = () => {
           <div className="row g-4">
             {/* Column 1: About */}
             <div className="col-12 col-md-6 col-lg-3">
-              <h5 className="fw-bold mb-4 text-uppercase" style={{ color: '#d4af37', letterSpacing: '2px' }}>Wine Store</h5>
+              <h5 className="fw-bold mb-4 text-uppercase" style={{ color: '#d4af37', letterSpacing: '2px' }}>{storeInfo.STORE_NAME}</h5>
               <p className="small mb-4" style={{ lineHeight: '1.8' }}>
                 Nơi hội tụ những dòng rượu vang thượng hạng từ các hầm rượu danh tiếng nhất thế giới. Chúng tôi mang đến trải nghiệm thưởng thức đẳng cấp và phong cách sống tinh tế cho giới mộ điệu.
               </p>
@@ -51,15 +78,15 @@ const Footer = () => {
               <ul className="list-unstyled mb-0 small">
                 <li className="mb-3 d-flex">
                   <i className="fa fa-map-marker-alt me-3 mt-1" style={{ color: '#d4af37' }}></i>
-                  <span>123 Đường Rượu Vang, Quận 1, TP. Hồ Chí Minh, Việt Nam</span>
+                  <span>{storeInfo.STORE_ADDRESS}</span>
                 </li>
                 <li className="mb-3 d-flex align-items-center">
                   <i className="fa fa-phone-alt me-3" style={{ color: '#d4af37' }}></i>
-                  <span>0972.778.480</span>
+                  <span>{storeInfo.STORE_PHONE}</span>
                 </li>
                 <li className="mb-3 d-flex align-items-center">
                   <i className="fa fa-envelope me-3" style={{ color: '#d4af37' }}></i>
-                  <span>contact@winestore.com</span>
+                  <span>{storeInfo.STORE_EMAIL}</span>
                 </li>
               </ul>
             </div>
@@ -93,7 +120,7 @@ const Footer = () => {
           <div className="row align-items-center">
             <div className="col-md-6 text-center text-md-start mb-3 mb-md-0">
               <p className="mb-0 small" style={{ color: '#888' }}>
-                &copy; {new Date().getFullYear()} <strong>Wine Store</strong>. Bản quyền thuộc về Wine Store.
+                &copy; {new Date().getFullYear()} <strong>{storeInfo.STORE_NAME}</strong>. Bản quyền thuộc về {storeInfo.STORE_NAME}.
               </p>
             </div>
             <div className="col-md-6 text-center text-md-end">

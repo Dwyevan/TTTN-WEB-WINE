@@ -32,6 +32,7 @@ const AdminOrders = () => {
   const statusConfig = {
     PENDING:   { label: "Chờ xử lý",   icon: "fa-clock",        color: "#e6a700", bg: "rgba(255,193,7,0.12)",  next: ["CONFIRMED", "CANCELLED"] },
     PAID:      { label: "Đã thanh toán", icon: "fa-money-check", color: "#28a745", bg: "rgba(40,167,69,0.12)",  next: ["CONFIRMED", "CANCELLED"] },
+    REFUND_PENDING: { label: "Yêu cầu hoàn tiền", icon: "fa-undo", color: "#fd7e14", bg: "rgba(253,126,20,0.12)", next: ["CANCELLED"] },
     CONFIRMED: { label: "Đã xác nhận", icon: "fa-clipboard-check", color: "#0069d9", bg: "rgba(0,123,255,0.12)", next: ["SHIPPING", "CANCELLED"] },
     SHIPPING:  { label: "Đang giao",   icon: "fa-shipping-fast", color: "#138496", bg: "rgba(23,162,184,0.12)", next: ["DELIVERED"] },
     DELIVERED: { label: "Hoàn tất",    icon: "fa-check-double",  color: "#218838", bg: "rgba(40,167,69,0.12)",  next: [] },
@@ -62,12 +63,13 @@ const AdminOrders = () => {
   const stats = useMemo(() => ({
     total: orders.length,
     totalRevenue: orders.filter(o => ["PAID", "CONFIRMED", "SHIPPING", "DELIVERED", "SHIPPED"].includes(o.status)).reduce((s, o) => s + (o.totalAmount || 0), 0),
-    pending: orders.filter(o => o.status === 'PENDING').length,
-    paid: orders.filter(o => o.status === 'PAID').length,
-    confirmed: orders.filter(o => o.status === 'CONFIRMED').length,
-    shipping: orders.filter(o => o.status === 'SHIPPING').length,
-    delivered: orders.filter(o => o.status === 'DELIVERED' || o.status === 'SHIPPED').length,
-    cancelled: orders.filter(o => o.status === 'CANCELLED').length,
+    pending: orders.filter(o => o.status === "PENDING").length,
+    paid: orders.filter(o => o.status === "PAID").length,
+    refund_pending: orders.filter(o => o.status === "REFUND_PENDING").length,
+    confirmed: orders.filter(o => o.status === "CONFIRMED").length,
+    shipping: orders.filter(o => o.status === "SHIPPING").length,
+    delivered: orders.filter(o => ["DELIVERED", "SHIPPED"].includes(o.status)).length,
+    cancelled: orders.filter(o => o.status === "CANCELLED").length,
   }), [orders]);
 
   const handleUpdateStatus = async (orderId, newStatus) => {
@@ -112,6 +114,7 @@ const AdminOrders = () => {
     { key: "ALL", label: "Tất cả", count: stats.total, color: "#722f37" },
     { key: "PENDING", label: "Chờ xử lý", count: stats.pending, color: "#e6a700" },
     { key: "PAID", label: "Đã TT", count: stats.paid, color: "#28a745" },
+    { key: "REFUND_PENDING", label: "Cần hoàn tiền", count: stats.refund_pending, color: "#fd7e14" },
     { key: "CONFIRMED", label: "Xác nhận", count: stats.confirmed, color: "#0069d9" },
     { key: "SHIPPING", label: "Đang giao", count: stats.shipping, color: "#138496" },
     { key: "DELIVERED", label: "Hoàn tất", count: stats.delivered, color: "#218838" },

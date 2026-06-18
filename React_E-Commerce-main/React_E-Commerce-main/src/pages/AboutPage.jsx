@@ -1,85 +1,221 @@
-import React from 'react'
+import React from 'react';
 import { Footer, Navbar } from "../components";
 
 const AboutPage = () => {
   return (
     <>
       <Navbar />
-      <div className="container my-3 py-3">
-        <h1 className="text-center fw-bold">Về Wine Store</h1>
-        <hr />
-        <p className="lead text-center mx-auto" style={{ maxWidth: "900px" }}>
-          Chào mừng bạn đến với <strong>Wine Store</strong> – nơi hội tụ của những dòng rượu thượng hạng từ khắp nơi trên thế giới. 
-          Với niềm đam mê mãnh liệt dành cho hương vị tinh túy, chúng tôi không chỉ bán rượu, mà còn mang đến những câu chuyện 
-          về di sản, vùng đất và nghệ thuật ủ rượu lâu đời. Từ những chai Vang Pháp cổ điển đến những dòng Whisky mạnh mẽ từ Scotland, 
-          mỗi sản phẩm tại Wine Store đều được tuyển chọn kỹ lưỡng để đảm bảo chất lượng hoàn hảo nhất cho quý khách hàng.
-        </p>
+      <style>{`
+        .parallax-header {
+          background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?q=80&w=2000&auto=format&fit=crop');
+          min-height: 70vh;
+          background-attachment: fixed;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-size: cover;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          text-align: center;
+        }
+        
+        .story-section {
+          padding: 100px 0;
+          background-color: #fcfcfc;
+        }
 
-        <h2 className="text-center py-4 fw-bold">Danh Mục Sản Phẩm</h2>
-        <div className="row">
-          {/* Rượu Vang */}
-          <div className="col-md-3 col-sm-6 mb-3 px-3">
-            <div className="card h-100 border-0 shadow-sm">
-              <img className="card-img-top img-fluid" src="https://images.pexels.com/photos/290316/pexels-photo-290316.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Fine Wine" height={160} />
-              <div className="card-body bg-dark text-white rounded-bottom">
-                <h5 className="card-title text-center mb-0">Rượu Vang Đỏ</h5>
-              </div>
-            </div>
-          </div>
-          
-          {/* Whisky & Spirits */}
-          <div className="col-md-3 col-sm-6 mb-3 px-3">
-            <div className="card h-100 border-0 shadow-sm">
-              <img className="card-img-top img-fluid" src="https://images.pexels.com/photos/1089930/pexels-photo-1089930.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Whisky" height={160} />
-              <div className="card-body bg-dark text-white rounded-bottom">
-                <h5 className="card-title text-center mb-0">Whisky Mạnh Mẽ</h5>
-              </div>
-            </div>
-          </div>
+        .timeline-container {
+          position: relative;
+          max-width: 800px;
+          margin: 0 auto;
+        }
 
-          {/* Hầm rượu / Sưu tập */}
-          <div className="col-md-3 col-sm-6 mb-3 px-3">
-            <div className="card h-100 border-0 shadow-sm">
-              <img className="card-img-top img-fluid" src="https://images.pexels.com/photos/1545529/pexels-photo-1545529.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Champagne" height={160} />
-              <div className="card-body bg-dark text-white rounded-bottom">
-                <h5 className="card-title text-center mb-0">Champagne & Sparkling</h5>
-              </div>
-            </div>
-          </div>
+        .timeline-container::after {
+          content: '';
+          position: absolute;
+          width: 4px;
+          background-color: #d4af37;
+          top: 0;
+          bottom: 0;
+          left: 50%;
+          margin-left: -2px;
+        }
 
-          {/* Phụ kiện rượu */}
-          <div className="col-md-3 col-sm-6 mb-3 px-3">
-            <div className="card h-100 border-0 shadow-sm">
-              <img className="card-img-top img-fluid" src="https://images.pexels.com/photos/391213/pexels-photo-391213.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Accessories" height={160} />
-              <div className="card-body bg-dark text-white rounded-bottom">
-                <h5 className="card-title text-center mb-0">Phụ Kiện Cao Cấp</h5>
-              </div>
-            </div>
-          </div>
+        .timeline-item {
+          padding: 10px 40px;
+          position: relative;
+          background-color: inherit;
+          width: 50%;
+        }
+
+        .timeline-item.left { left: 0; }
+        .timeline-item.right { left: 50%; }
+
+        .timeline-item::after {
+          content: '';
+          position: absolute;
+          width: 20px;
+          height: 20px;
+          right: -10px;
+          background-color: white;
+          border: 4px solid #722f37;
+          top: 15px;
+          border-radius: 50%;
+          z-index: 1;
+        }
+
+        .timeline-item.right::after {
+          left: -10px;
+        }
+
+        .timeline-content {
+          padding: 30px;
+          background-color: white;
+          position: relative;
+          border-radius: 16px;
+          box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+          border: 1px solid #f0f0f0;
+          transition: transform 0.3s ease;
+        }
+
+        .timeline-content:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 20px 40px rgba(114,47,55,0.1);
+        }
+
+        .glass-feature {
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 20px;
+          padding: 40px 20px;
+          text-align: center;
+          box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+          height: 100%;
+          transition: all 0.3s ease;
+        }
+
+        .glass-feature:hover {
+          transform: translateY(-10px);
+          border-color: rgba(212,175,55,0.3);
+        }
+
+        .glass-icon {
+          width: 80px;
+          height: 80px;
+          background: linear-gradient(135deg, rgba(114,47,55,0.1), rgba(114,47,55,0.05));
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 20px;
+          color: #722f37;
+          font-size: 30px;
+        }
+      `}</style>
+
+      {/* Hero Parallax */}
+      <div className="parallax-header">
+        <div className="container">
+          <h1 className="display-2 fw-bold text-uppercase mb-4" style={{ letterSpacing: '4px', textShadow: '2px 4px 10px rgba(0,0,0,0.5)' }}>
+            Wine Store
+          </h1>
+          <p className="lead mx-auto fs-4" style={{ maxWidth: '800px', fontWeight: '300', textShadow: '1px 2px 5px rgba(0,0,0,0.5)' }}>
+            Khởi nguồn từ niềm đam mê mãnh liệt, chúng tôi mang tinh hoa của những điền trang danh tiếng nhất thế giới đến ly rượu của bạn.
+          </p>
         </div>
+      </div>
 
-        {/* Phần cam kết nghiệp vụ */}
-        <div className="row mt-5 py-5 bg-light rounded">
-          <div className="col-md-4 text-center">
-            <i className="fa fa-check-circle fa-3x mb-3 text-warning"></i>
-            <h5>Chất Lượng Chính Hãng</h5>
-            <p className="small">Cam kết 100% rượu nhập khẩu chính ngạch, có đầy đủ giấy tờ nguồn gốc.</p>
+      {/* Our Story Section */}
+      <div className="story-section">
+        <div className="container">
+          <div className="text-center mb-5 pb-4">
+            <h2 className="fw-bold text-uppercase" style={{ color: '#1a1a1a', letterSpacing: '2px' }}>Hành trình của chúng tôi</h2>
+            <div style={{ width: '60px', height: '3px', background: '#d4af37', margin: '20px auto' }}></div>
+            <p className="text-muted mx-auto" style={{ maxWidth: '700px', fontSize: '1.1rem' }}>
+              Từ một hầm rượu nhỏ tại lòng thành phố, Wine Store đã vươn mình trở thành điểm đến tin cậy hàng đầu cho những người yêu vang đích thực tại Việt Nam.
+            </p>
           </div>
-          <div className="col-md-4 text-center">
-            <i className="fa fa-truck fa-3x mb-3 text-warning"></i>
-            <h5>Giao Hàng Hỏa Tốc</h5>
-            <p className="small">Đóng gói chuyên dụng, giao nhanh trong nội thành để đảm bảo nhiệt độ rượu.</p>
-          </div>
-          <div className="col-md-4 text-center">
-            <i className="fa fa-glass fa-3x mb-3 text-warning"></i>
-            <h5>Tư Vấn Chuyên Nghiệp</h5>
-            <p className="small">Đội ngũ chuyên gia am hiểu sâu sắc về văn hóa thưởng thức rượu.</p>
+
+          <div className="timeline-container">
+            <div className="timeline-item left">
+              <div className="timeline-content">
+                <h3 className="fw-bold" style={{ color: '#722f37' }}>2015</h3>
+                <h5 className="fw-bold mt-2">Viên gạch đầu tiên</h5>
+                <p className="text-muted mb-0">Cửa hàng nhỏ gọn với vỏn vẹn 50 nhãn chai vang Pháp và Ý được khai trương, phục vụ những người bạn cùng chung đam mê.</p>
+              </div>
+            </div>
+            
+            <div className="timeline-item right">
+              <div className="timeline-content">
+                <h3 className="fw-bold" style={{ color: '#722f37' }}>2018</h3>
+                <h5 className="fw-bold mt-2">Mở rộng bộ sưu tập</h5>
+                <p className="text-muted mb-0">Hợp tác trực tiếp với hơn 20 điền trang (Château) lớn trên thế giới, nâng tổng số nhãn vang lên 500+.</p>
+              </div>
+            </div>
+            
+            <div className="timeline-item left">
+              <div className="timeline-content">
+                <h3 className="fw-bold" style={{ color: '#722f37' }}>2021</h3>
+                <h5 className="fw-bold mt-2">Chứng nhận chất lượng</h5>
+                <p className="text-muted mb-0">Trở thành nhà phân phối độc quyền cho nhiều thương hiệu Grand Cru Classé danh giá và đạt chứng chỉ kho bảo quản tiêu chuẩn quốc tế.</p>
+              </div>
+            </div>
+            
+            <div className="timeline-item right">
+              <div className="timeline-content">
+                <h3 className="fw-bold" style={{ color: '#722f37' }}>2024</h3>
+                <h5 className="fw-bold mt-2">Số hóa trải nghiệm</h5>
+                <p className="text-muted mb-0">Ra mắt nền tảng thương mại điện tử hiện đại, tích hợp AI Sommelier tư vấn chọn rượu cá nhân hóa cho hàng triệu khách hàng.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Core Values Section (Parallax background 2) */}
+      <div style={{
+        backgroundImage: "linear-gradient(rgba(114, 47, 55, 0.85), rgba(114, 47, 55, 0.9)), url('https://images.unsplash.com/photo-1584916201218-f4242ceb4809?q=80&w=2000&auto=format&fit=crop')",
+        backgroundAttachment: 'fixed',
+        backgroundPosition: 'center',
+        padding: '100px 0'
+      }}>
+        <div className="container">
+          <div className="text-center mb-5">
+            <h2 className="fw-bold text-white text-uppercase" style={{ letterSpacing: '2px' }}>Giá Trị Cốt Lõi</h2>
+            <div style={{ width: '60px', height: '3px', background: '#d4af37', margin: '20px auto' }}></div>
+          </div>
+          
+          <div className="row g-4">
+            <div className="col-md-4">
+              <div className="glass-feature">
+                <div className="glass-icon"><i className="fa fa-gem"></i></div>
+                <h4 className="fw-bold mb-3">100% Chính Hãng</h4>
+                <p className="text-muted mb-0">Mỗi chai vang đều có đầy đủ chứng từ xuất xứ, hóa đơn đỏ. Cam kết hoàn tiền 300% nếu phát hiện hàng giả.</p>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="glass-feature">
+                <div className="glass-icon"><i className="fa fa-thermometer-half"></i></div>
+                <h4 className="fw-bold mb-3">Bảo Quản Chuẩn Mực</h4>
+                <p className="text-muted mb-0">Hệ thống kho lạnh thông minh duy trì nhiệt độ 16°C và độ ẩm 70% liên tục 24/7 để giữ trọn hương vị.</p>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="glass-feature">
+                <div className="glass-icon"><i className="fa fa-user-tie"></i></div>
+                <h4 className="fw-bold mb-3">Chuyên Gia Tư Vấn</h4>
+                <p className="text-muted mb-0">Đội ngũ tư vấn viên được đào tạo chuyên sâu bởi các Sommelier quốc tế, sẵn sàng hỗ trợ 24/7.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <Footer />
     </>
-  )
-}
+  );
+};
 
-export default AboutPage
+export default AboutPage;

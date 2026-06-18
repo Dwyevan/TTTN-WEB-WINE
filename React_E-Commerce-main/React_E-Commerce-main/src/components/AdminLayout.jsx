@@ -37,6 +37,12 @@ const AdminLayout = () => {
             gradient: "linear-gradient(135deg, #722f37 0%, #a04050 100%)"
         },
         { 
+            path: "/admin/users", 
+            icon: "fa-users", 
+            label: "Khách hàng",
+            gradient: "linear-gradient(135deg, #1f4037 0%, #99f2c8 100%)"
+        },
+        { 
             path: "/admin/orders", 
             icon: "fa-shopping-cart", 
             label: "Đơn hàng",
@@ -71,6 +77,12 @@ const AdminLayout = () => {
             icon: "fa-comments", 
             label: "Phản hồi",
             gradient: "linear-gradient(135deg, #457b9d 0%, #a8dadc 100%)"
+        },
+        { 
+            path: "/admin/settings", 
+            icon: "fa-cogs", 
+            label: "Cài đặt",
+            gradient: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)"
         }
     ];
 

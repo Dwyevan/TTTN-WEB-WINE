@@ -25,6 +25,9 @@ const Product = () => {
   const [userRating, setUserRating] = useState(5);
   const [submitting, setSubmitting] = useState(false);
   const [reviewSort, setReviewSort] = useState("newest");
+  
+  // Trạng thái cho tính năng Zoom (Magnifier)
+  const [zoomStyle, setZoomStyle] = useState({ display: 'none' });
 
   const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=400&auto=format&fit=crop";
 
@@ -92,6 +95,22 @@ const Product = () => {
     }
   };
 
+  const handleMouseMove = (e) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.pageX - left) / width) * 100;
+    const y = ((e.pageY - top) / height) * 100;
+    setZoomStyle({
+      display: 'block',
+      backgroundPosition: `${x}% ${y}%`,
+      backgroundImage: `url(${product.imageUrl || DEFAULT_IMAGE})`,
+      backgroundSize: '250%'
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setZoomStyle({ display: 'none' });
+  };
+
   if (loading) return (
     <div className="d-flex justify-content-center align-items-center vh-100">
       <div className="spinner-border text-danger" role="status"></div>
@@ -141,7 +160,7 @@ const Product = () => {
           }
         `}</style>
         <div className="row g-5">
-          {/* PHẦN HÌNH ẢNH SẢN PHẨM */}
+          {/* PHẦN HÌNH ẢNH SẢN PHẨM VỚI MAGNIFIER */}
           <div className="col-md-5">
             <div className="position-relative border-0 rounded-4 bg-light p-5 shadow-sm sticky-top d-flex justify-content-center align-items-center" style={{top: "110px", minHeight: '500px'}}>
               {hasDiscount && (
@@ -151,12 +170,33 @@ const Product = () => {
                     </span>
                 </div>
               )}
-              <img 
-                src={product.imageUrl || DEFAULT_IMAGE} 
-                className="img-fluid w-100 img-hover-zoom" 
-                alt={product.name} 
-                style={{maxHeight: '450px', objectFit: 'contain', mixBlendMode: 'multiply'}}
-              />
+              <div 
+                className="product-image-container w-100 position-relative" 
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+                style={{ cursor: 'crosshair', height: '400px', display: 'flex', justifyContent: 'center' }}
+              >
+                <img 
+                  src={product.imageUrl || DEFAULT_IMAGE} 
+                  className="img-fluid" 
+                  alt={product.name} 
+                  style={{ maxHeight: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }}
+                />
+                <div 
+                  className="zoom-lens position-absolute shadow-lg border rounded-circle"
+                  style={{
+                    ...zoomStyle,
+                    width: '180px',
+                    height: '180px',
+                    pointerEvents: 'none',
+                    top: '50%',
+                    left: '110%',
+                    transform: 'translateY(-50%)',
+                    backgroundColor: '#fff',
+                    zIndex: 1000
+                  }}
+                ></div>
+              </div>
             </div>
           </div>
 

@@ -87,6 +87,11 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-dialogflow</artifactId>
+			<version>4.39.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

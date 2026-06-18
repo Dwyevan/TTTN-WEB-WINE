@@ -12,7 +12,7 @@ import java.util.Map; // Thêm để dùng cho thống kê
 
 @RestController
 @RequestMapping("/api/wines")
-@CrossOrigin(origins = "http://localhost:3000") 
+@CrossOrigin(origins = "*") 
 @RequiredArgsConstructor
 public class WineController {
 

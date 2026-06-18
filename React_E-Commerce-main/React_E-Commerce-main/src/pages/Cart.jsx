@@ -4,14 +4,37 @@ import { useSelector, useDispatch } from "react-redux";
 import { addCart, delCart } from "../redux/action";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 const Cart = () => {
   const state = useSelector((state) => state.handleCart);
   const dispatch = useDispatch();
 
-  // Ngưỡng miễn phí vận chuyển
-  const SHIPPING_THRESHOLD = 2000000;
-  const SHIPPING_FEE = 35000;
+  const [shippingConfig, setShippingConfig] = useState({
+    SHIPPING_THRESHOLD: 2000000,
+    SHIPPING_FEE: 35000
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get("http://localhost:8080/api/settings");
+        if (res.data) {
+          setShippingConfig({
+            SHIPPING_THRESHOLD: parseInt(res.data.FREE_SHIPPING_THRESHOLD) || 2000000,
+            SHIPPING_FEE: parseInt(res.data.SHIPPING_FEE) || 35000
+          });
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy cài đặt phí vận chuyển:", error);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const SHIPPING_THRESHOLD = shippingConfig.SHIPPING_THRESHOLD;
+  const SHIPPING_FEE = shippingConfig.SHIPPING_FEE;
 
   // Nghiệp vụ: Tăng số lượng có kiểm tra kho (Stock)
   const handleIncrement = (item) => {

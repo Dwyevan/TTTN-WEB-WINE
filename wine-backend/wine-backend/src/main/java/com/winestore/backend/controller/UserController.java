@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:3000") // Cho phép React truy cập
+@CrossOrigin(origins = "*") // Cho phép React truy cập
 @RequiredArgsConstructor
 public class UserController {
 
@@ -45,6 +45,12 @@ public class UserController {
 
         if (user.isPresent() && user.get().getPassword().equals(loginRequest.getPassword())) {
             User loggedInUser = user.get();
+            
+            // Kiểm tra trạng thái khóa tài khoản
+            if (loggedInUser.getActive() != null && !loggedInUser.getActive()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Tài khoản của bạn đã bị khóa bởi Admin!");
+            }
+            
             String token = jwtUtil.generateToken(loggedInUser.getUsername(), loggedInUser.getRole());
             loggedInUser.setToken(token);
             return ResponseEntity.ok(loggedInUser);
@@ -53,13 +59,50 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai tên đăng nhập hoặc mật khẩu!");
     }
 
+    // Lấy tất cả người dùng (Cho Admin)
+    @GetMapping
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity.ok(userRepository.findAll());
+    }
+
+    // Khóa / Mở khóa tài khoản
+    @PatchMapping("/{id}/toggle-lock")
+    public ResponseEntity<?> toggleUserLock(@PathVariable Long id) {
+        return userRepository.findById(id).map(user -> {
+            if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+                 return ResponseEntity.badRequest().body("Lỗi: Không thể khóa tài khoản Quản trị viên (ADMIN)!");
+            }
+            boolean currentStatus = user.getActive() == null ? true : user.getActive();
+            user.setActive(!currentStatus);
+            User updatedUser = userRepository.save(user);
+            return ResponseEntity.ok(updatedUser);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
         return userRepository.findById(id).map(user -> {
             user.setFullName(userDetails.getFullName()); // Cập nhật tên mới
-            // Bạn có thể cập nhật thêm email, phone... ở đây
+            user.setPhone(userDetails.getPhone());
+            user.setAddress(userDetails.getAddress());
             User updatedUser = userRepository.save(user);
             return ResponseEntity.ok(updatedUser);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/{id}/password")
+    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody java.util.Map<String, String> request) {
+        return userRepository.findById(id).map(user -> {
+            String oldPassword = request.get("oldPassword");
+            String newPassword = request.get("newPassword");
+            
+            if (!user.getPassword().equals(oldPassword)) {
+                return ResponseEntity.badRequest().body("Lỗi: Mật khẩu hiện tại không đúng!");
+            }
+            
+            user.setPassword(newPassword);
+            userRepository.save(user);
+            return ResponseEntity.ok().body("Đổi mật khẩu thành công!");
         }).orElse(ResponseEntity.notFound().build());
     }
 }

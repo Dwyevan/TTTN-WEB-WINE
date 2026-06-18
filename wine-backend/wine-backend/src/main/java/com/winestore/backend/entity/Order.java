@@ -39,6 +39,9 @@ public class Order {
     @Column(length = 20)
     private String status = "PENDING";
 
+    @Column(columnDefinition = "TEXT")
+    private String cancellationReason;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
     @com.fasterxml.jackson.annotation.JsonIgnore // Prevent infinite recursion when serializing

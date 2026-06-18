@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import * as XLSX from 'xlsx';
+import toast from "react-hot-toast";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
+import { Doughnut, Bar } from 'react-chartjs-2';
+
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -21,6 +27,63 @@ const AdminDashboard = () => {
     };
     fetchDashboardStats();
   }, []);
+
+  // Hàm Xuất Báo Cáo Doanh Thu ra Excel
+  const exportToExcel = async () => {
+    const loadingToast = toast.loading("Đang thu thập dữ liệu...");
+    try {
+      // 1. Fetch toàn bộ orders (Không chỉ limit những order gần đây)
+      const res = await axios.get("http://localhost:8080/api/orders");
+      const orders = res.data;
+      
+      if (!orders || orders.length === 0) {
+        toast.error("Không có dữ liệu đơn hàng để xuất", { id: loadingToast });
+        return;
+      }
+
+      // 2. Format dữ liệu
+      const excelData = orders.map(order => ({
+        "Mã Đơn": `#${order.id}`,
+        "Ngày Đặt": new Date(order.orderDate).toLocaleString('vi-VN'),
+        "Khách Hàng": order.customerName || "N/A",
+        "SĐT": order.phone || "N/A",
+        "Email": order.customerEmail || "N/A",
+        "Sản Phẩm": order.items?.map(i => `${i.name} (x${i.quantity})`).join(", ") || "",
+        "Tổng Tiền (VNĐ)": order.totalAmount,
+        "Lý Do Hủy": order.cancellationReason || "",
+        "Trạng Thái": statusConfig[order.status]?.label || order.status
+      }));
+
+      // 3. Khởi tạo Sheet
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Tùy chỉnh độ rộng cột cho đẹp
+      const wscols = [
+        { wch: 10 }, // Mã đơn
+        { wch: 20 }, // Ngày đặt
+        { wch: 25 }, // Khách hàng
+        { wch: 15 }, // SĐT
+        { wch: 25 }, // Email
+        { wch: 45 }, // Sản phẩm
+        { wch: 15 }, // Tổng tiền
+        { wch: 25 }, // Lý do hủy
+        { wch: 15 }  // Trạng thái
+      ];
+      worksheet['!cols'] = wscols;
+
+      // 4. Tạo Workbook và xuất file
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Doanh Thu");
+
+      const dateStr = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-');
+      XLSX.writeFile(workbook, `Bao_Cao_Doanh_Thu_${dateStr}.xlsx`);
+      
+      toast.success("Xuất báo cáo Excel thành công!", { id: loadingToast });
+    } catch (err) {
+      console.error(err);
+      toast.error("Lỗi khi xuất file Excel!", { id: loadingToast });
+    }
+  };
 
   // Format VNĐ
   const formatCurrency = (value) => {
@@ -113,6 +176,64 @@ const AdminDashboard = () => {
     { key: "cancelled", label: "Đã hủy", count: stats?.cancelledOrdersCount, icon: "fa-ban", color: "#c82333", bg: "rgba(220,53,69,0.1)" },
   ];
 
+  // ===== CHART DATA SETUP =====
+  const orderStatusChartData = {
+    labels: ['Chờ xử lý', 'Đã xác nhận', 'Đang giao', 'Hoàn tất', 'Đã hủy'],
+    datasets: [{
+      data: [
+        stats?.pendingOrdersCount || 0,
+        stats?.confirmedOrdersCount || 0,
+        stats?.shippingOrdersCount || 0,
+        stats?.deliveredOrdersCount || 0,
+        stats?.cancelledOrdersCount || 0
+      ],
+      backgroundColor: ['#ffc107', '#007bff', '#17a2b8', '#28a745', '#dc3545'],
+      borderWidth: 0,
+      hoverOffset: 4
+    }]
+  };
+
+  const doughnutOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } }
+    },
+    cutout: '75%'
+  };
+
+  const bestSellerChartData = {
+    labels: stats?.bestSellers?.map(item => {
+      // Rút gọn tên nếu quá dài để hiển thị trên trục X
+      const name = item.name || '';
+      return name.length > 20 ? name.substring(0, 20) + '...' : name;
+    }) || [],
+    datasets: [{
+      label: 'Đã bán (chai)',
+      data: stats?.bestSellers?.map(item => item.soldCount) || [],
+      backgroundColor: 'rgba(114, 47, 55, 0.85)', // Màu đỏ vang
+      borderRadius: 6,
+      barThickness: 30
+    }]
+  };
+
+  const barOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: (context) => stats?.bestSellers?.[context[0].dataIndex]?.name || ''
+        }
+      }
+    },
+    scales: {
+      y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#e9ecef' } },
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh' }}>
       {/* ===== HEADER ===== */}
@@ -139,15 +260,24 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </div>
-            <div className="d-flex gap-2 mt-3 mt-md-0">
-              <span className="badge px-3 py-2" style={{
+            <div className="d-flex gap-2 mt-3 mt-md-0 align-items-center">
+              <span className="badge px-3 py-2 me-2 d-none d-sm-inline-block" style={{
                 background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)',
                 borderRadius: '10px', fontSize: '12px', color: '#fff'
               }}>
                 <i className="fa fa-calendar-alt me-1"></i>
                 {new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </span>
-              <button className="btn btn-sm px-3" onClick={() => window.location.reload()} style={{
+              
+              {/* Nút Xuất Excel */}
+              <button className="btn btn-sm px-3 py-2 fw-bold shadow-sm" onClick={exportToExcel} style={{
+                background: '#217346', color: '#fff', border: '1px solid #1e6b41', borderRadius: '10px',
+                transition: 'all 0.2s ease'
+              }} onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}>
+                <i className="fa fa-file-excel me-2"></i>Xuất Excel
+              </button>
+
+              <button className="btn btn-sm px-3 py-2" onClick={() => window.location.reload()} style={{
                 background: 'rgba(255,255,255,0.15)', color: '#fff', border: 'none', borderRadius: '10px'
               }}>
                 <i className="fa fa-sync-alt"></i>
@@ -224,6 +354,52 @@ const AdminDashboard = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ===== CHARTS ROW ===== */}
+      <div className="row g-4 mb-4">
+        {/* Doughnut Chart: Tỷ lệ Đơn Hàng */}
+        <div className="col-lg-4">
+          <div className="card border-0 shadow-sm h-100" style={{ borderRadius: '16px' }}>
+            <div className="card-header bg-white border-0 p-4 pb-0">
+              <h5 className="fw-bold mb-0">
+                <i className="fa fa-chart-pie me-2" style={{ color: '#722f37' }}></i>
+                Tỷ Lệ Đơn Hàng
+              </h5>
+            </div>
+            <div className="card-body p-4 d-flex justify-content-center align-items-center" style={{ height: '320px' }}>
+              <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                {stats ? <Doughnut data={orderStatusChartData} options={doughnutOptions} /> : null}
+                <div className="position-absolute top-50 start-50 translate-middle text-center" style={{ marginTop: '-15px' }}>
+                  <div className="text-muted small">Tổng đơn</div>
+                  <h4 className="fw-bold mb-0 text-dark">{stats?.totalOrders || 0}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bar Chart: Sản Phẩm Bán Chạy */}
+        <div className="col-lg-8">
+          <div className="card border-0 shadow-sm h-100" style={{ borderRadius: '16px' }}>
+            <div className="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
+              <h5 className="fw-bold mb-0">
+                <i className="fa fa-chart-bar me-2" style={{ color: '#722f37' }}></i>
+                Top 5 Rượu Vang Bán Chạy Nhất
+              </h5>
+            </div>
+            <div className="card-body p-4" style={{ height: '320px' }}>
+              {stats?.bestSellers?.length > 0 ? (
+                <Bar data={bestSellerChartData} options={barOptions} />
+              ) : (
+                <div className="d-flex flex-column justify-content-center align-items-center h-100">
+                  <i className="fa fa-box-open fa-3x text-muted mb-3" style={{ opacity: 0.3 }}></i>
+                  <span className="text-muted">Chưa có dữ liệu sản phẩm bán ra</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

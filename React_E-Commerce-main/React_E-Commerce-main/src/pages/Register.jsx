@@ -54,126 +54,99 @@ const Register = () => {
         }
     };
 
-    return (
-        <>
-            <Navbar />
-            <div className="container my-5 py-5">
-                <div className="row justify-content-center">
-                    <div className="col-md-6 col-lg-5">
-                        <div className="card border-0 shadow-lg p-4" style={{ borderRadius: "15px" }}>
-                            <div className="text-center mb-4">
-                                <h2 className="fw-bold text-dark text-uppercase">Đăng Ký</h2>
-                                <p className="text-muted small">Tạo tài khoản để trải nghiệm dịch vụ rượu cao cấp</p>
-                            </div>
-
-                            <form onSubmit={handleSubmit}>
-                                {/* Full Name */}
-                                <div className="form-floating mb-3">
-                                    <input
-                                        type="text"
-                                        className="form-control border-0 bg-light shadow-none"
-                                        id="fullName"
-                                        placeholder="Full Name"
-                                        value={formData.fullName}
-                                        onChange={handleChange}
-                                        required
-                                        style={{ borderRadius: "10px" }}
-                                    />
-                                    <label htmlFor="fullName">Họ và Tên</label>
-                                </div>
-
-                                {/* Username */}
-                                <div className="form-floating mb-3">
-                                    <input
-                                        type="text"
-                                        className="form-control border-0 bg-light shadow-none"
-                                        id="username"
-                                        placeholder="Username"
-                                        value={formData.username}
-                                        onChange={handleChange}
-                                        required
-                                        style={{ borderRadius: "10px" }}
-                                    />
-                                    <label htmlFor="username">Tên đăng nhập</label>
-                                </div>
-
-                                {/* Email */}
-                                <div className="form-floating mb-3">
-                                    <input
-                                        type="email"
-                                        className="form-control border-0 bg-light shadow-none"
-                                        id="email"
-                                        placeholder="Email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        required
-                                        style={{ borderRadius: "10px" }}
-                                    />
-                                    <label htmlFor="email">Địa chỉ Email</label>
-                                </div>
-
-                                {/* Password */}
-                                <div className="form-floating mb-3">
-                                    <input
-                                        type="password"
-                                        className="form-control border-0 bg-light shadow-none"
-                                        id="password"
-                                        placeholder="Password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        required
-                                        style={{ borderRadius: "10px" }}
-                                    />
-                                    <label htmlFor="password">Mật khẩu</label>
-                                </div>
-
-                                {/* Confirm Password */}
-                                <div className="form-floating mb-4">
-                                    <input
-                                        type="password"
-                                        className="form-control border-0 bg-light shadow-none"
-                                        id="confirmPassword"
-                                        placeholder="Confirm Password"
-                                        value={formData.confirmPassword}
-                                        onChange={handleChange}
-                                        required
-                                        style={{ borderRadius: "10px" }}
-                                    />
-                                    <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
-                                </div>
-
-                                <button 
-                                    className="btn btn-dark w-100 py-3 fw-bold shadow-sm" 
-                                    type="submit"
-                                    disabled={loading}
-                                    style={{ borderRadius: "10px" }}
-                                >
-                                    {loading ? (
-                                        <span className="spinner-border spinner-border-sm me-2"></span>
-                                    ) : (
-                                        "TẠO TÀI KHOẢN"
-                                    )}
-                                </button>
-                            </form>
-
-                            <div className="mt-4 text-center">
-                                <p className="small text-muted">
-                                    Đã có tài khoản?{" "}
-                                    <Link to="/login" className="text-dark fw-bold text-decoration-none">
-                                        Đăng nhập ngay
-                                    </Link>
-                                </p>
-                                <Link to="/" className="text-muted small text-decoration-none">
-                                    <i className="fa fa-arrow-left me-1"></i> Về trang chủ
-                                </Link>
-                            </div>
-                        </div>
+  return (
+    <>
+      <Navbar />
+      <div style={{
+        minHeight: '100vh',
+        background: `linear-gradient(rgba(26, 26, 26, 0.8), rgba(114, 47, 55, 0.8)), url('https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover fixed`,
+        display: 'flex',
+        alignItems: 'center',
+        paddingTop: '100px',
+        paddingBottom: '50px'
+      }}>
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-md-8 col-lg-6 col-xl-5">
+              <div className="card border-0 shadow-lg" style={{ 
+                background: 'rgba(255, 255, 255, 0.95)', 
+                backdropFilter: 'blur(10px)',
+                borderRadius: "20px",
+                overflow: 'hidden'
+              }}>
+                <div className="p-4 p-md-5">
+                  <div className="text-center mb-4 pb-2">
+                    <div className="d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style={{ width: '65px', height: '65px', borderRadius: '50%', background: 'linear-gradient(135deg, #722f37 0%, #a04050 100%)', color: '#fff' }}>
+                        <i className="fa fa-user-plus fs-3"></i>
                     </div>
+                    <h3 className="fw-bold text-dark text-uppercase" style={{ letterSpacing: '2px' }}>Đăng Ký</h3>
+                    <p className="text-muted small">Tạo tài khoản để trải nghiệm dịch vụ cao cấp</p>
+                  </div>
+
+                  <form onSubmit={handleSubmit}>
+                    <div className="row g-3">
+                      <div className="col-sm-6">
+                        <div className="form-floating">
+                          <input type="text" className="form-control bg-light" id="fullName" placeholder="Full Name" value={formData.fullName} onChange={handleChange} required style={{ borderRadius: "12px", border: '1px solid #eee' }} />
+                          <label htmlFor="fullName" className="text-muted"><i className="fa fa-id-card me-2"></i>Họ và Tên</label>
+                        </div>
+                      </div>
+
+                      <div className="col-sm-6">
+                        <div className="form-floating">
+                          <input type="text" className="form-control bg-light" id="username" placeholder="Username" value={formData.username} onChange={handleChange} required style={{ borderRadius: "12px", border: '1px solid #eee' }} />
+                          <label htmlFor="username" className="text-muted"><i className="fa fa-user me-2"></i>Tên đăng nhập</label>
+                        </div>
+                      </div>
+
+                      <div className="col-12">
+                        <div className="form-floating">
+                          <input type="email" className="form-control bg-light" id="email" placeholder="Email" value={formData.email} onChange={handleChange} required style={{ borderRadius: "12px", border: '1px solid #eee' }} />
+                          <label htmlFor="email" className="text-muted"><i className="fa fa-envelope me-2"></i>Địa chỉ Email</label>
+                        </div>
+                      </div>
+
+                      <div className="col-sm-6">
+                        <div className="form-floating">
+                          <input type="password" className="form-control bg-light" id="password" placeholder="Password" value={formData.password} onChange={handleChange} required style={{ borderRadius: "12px", border: '1px solid #eee' }} />
+                          <label htmlFor="password" className="text-muted"><i className="fa fa-lock me-2"></i>Mật khẩu</label>
+                        </div>
+                      </div>
+
+                      <div className="col-sm-6">
+                        <div className="form-floating">
+                          <input type="password" className="form-control bg-light" id="confirmPassword" placeholder="Confirm Password" value={formData.confirmPassword} onChange={handleChange} required style={{ borderRadius: "12px", border: '1px solid #eee' }} />
+                          <label htmlFor="confirmPassword" className="text-muted"><i className="fa fa-check-circle me-2"></i>Xác nhận MK</label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 mb-3">
+                        <small className="text-muted d-block text-center" style={{ fontSize: '12px' }}>
+                          Bằng việc đăng ký, bạn đồng ý với <Link to="#" className="text-decoration-none" style={{ color: '#722f37' }}>Điều khoản dịch vụ</Link> và <Link to="#" className="text-decoration-none" style={{ color: '#722f37' }}>Chính sách bảo mật</Link> của chúng tôi.
+                        </small>
+                    </div>
+
+                    <button className="btn w-100 py-3 fw-bold text-white shadow" type="submit" disabled={loading} style={{ borderRadius: "12px", background: 'linear-gradient(135deg, #722f37 0%, #a04050 100%)', border: 'none', letterSpacing: '1px', transition: "all 0.3s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(114,47,55,0.3)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
+                      {loading ? <span className="spinner-border spinner-border-sm me-2"></span> : "TẠO TÀI KHOẢN"}
+                    </button>
+                  </form>
+
+                  <div className="text-center mt-4 pt-3 border-top">
+                    <p className="small text-muted mb-0">
+                      Đã có tài khoản?{" "}
+                      <Link to="/login" className="fw-bold text-decoration-none" style={{ color: '#722f37' }}>Đăng nhập ngay</Link>
+                    </p>
+                  </div>
                 </div>
+              </div>
             </div>
-            <Footer />
-        </>
-    );
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </>
+  );
 };
 
 export default Register;

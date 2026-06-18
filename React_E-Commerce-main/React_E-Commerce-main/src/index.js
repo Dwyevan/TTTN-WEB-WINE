@@ -30,7 +30,9 @@ import {
   WineAIChat,
   PaymentResult,
   AdminInventory,
-  Wishlist
+  Wishlist,
+  AdminUserList,
+  AdminSettings
 } from "./pages";
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -121,6 +123,7 @@ const AppProvider = () => {
               }
             >
               <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUserList />} />
               <Route path="orders" element={<AdminOrders />} />
               <Route path="add-product" element={<AddProduct />} />
               <Route path="products" element={<AdminProductList />} />
@@ -129,6 +132,7 @@ const AppProvider = () => {
               <Route path="orders/:id" element={<AdminOrderDetail />} />
               <Route path="feedbacks" element={<AdminFeedbackList />} />
               <Route path="coupons" element={<AdminCouponList />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
 
             {/* 404 ROUTES */}
