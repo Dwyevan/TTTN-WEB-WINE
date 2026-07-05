@@ -39,7 +39,7 @@ public class MoMoPaymentService implements PaymentService {
                 "&orderId=" + orderIdStr +
                 "&orderInfo=" + orderInfo +
                 "&partnerCode=" + moMoConfig.getPartnerCode() +
-                "&redirectUrl=" + moMoConfig.getReturnUrl() +
+                "&redirectUrl=https://tttn-web-wine.vercel.app/payment/result" +
                 "&requestId=" + requestId +
                 "&requestType=captureWallet";
 
@@ -54,7 +54,7 @@ public class MoMoPaymentService implements PaymentService {
         payload.put("amount", amountStr);
         payload.put("orderId", orderIdStr);
         payload.put("orderInfo", orderInfo);
-        payload.put("redirectUrl", moMoConfig.getReturnUrl());
+        payload.put("redirectUrl", "https://tttn-web-wine.vercel.app/payment/result");
         payload.put("ipnUrl", moMoConfig.getNotifyUrl());
         payload.put("lang", "vi");
         payload.put("extraData", "");
@@ -101,7 +101,7 @@ public class MoMoPaymentService implements PaymentService {
 
             String mockSignature = MoMoConfig.hmacSHA256(rawVerifyHash, moMoConfig.getSecretKey());
 
-            return moMoConfig.getReturnUrl() + "?" +
+            return "https://tttn-web-wine.vercel.app/payment/result?" +
                     "partnerCode=" + moMoConfig.getPartnerCode() +
                     "&orderId=" + java.net.URLEncoder.encode(orderIdStr, "UTF-8") +
                     "&requestId=" + requestId +

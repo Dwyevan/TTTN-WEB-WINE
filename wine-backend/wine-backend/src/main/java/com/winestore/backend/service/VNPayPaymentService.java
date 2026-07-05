@@ -31,7 +31,7 @@ public class VNPayPaymentService implements PaymentService {
         vnp_Params.put("vnp_OrderInfo", "Thanh_toan_don_hang_" + order.getId());
         vnp_Params.put("vnp_OrderType", "other");
         vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getVnp_ReturnUrl());
+        vnp_Params.put("vnp_ReturnUrl", "https://tttn-web-wine.vercel.app/payment/result");
         
         String vnp_IpAddr = request.getRemoteAddr();
         if (vnp_IpAddr.equals("0:0:0:0:0:0:0:1")) {
