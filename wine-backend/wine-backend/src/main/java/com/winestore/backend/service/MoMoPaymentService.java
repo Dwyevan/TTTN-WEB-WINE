@@ -121,18 +121,18 @@ public class MoMoPaymentService implements PaymentService {
     @Override
     public boolean verifyPayment(Map<String, String> queryParams) {
         String rawHash = "accessKey=" + moMoConfig.getAccessKey() +
-                "&amount=" + queryParams.get("amount") +
-                "&extraData=" + queryParams.get("extraData") +
-                "&message=" + queryParams.get("message") +
-                "&orderId=" + queryParams.get("orderId") +
-                "&orderInfo=" + queryParams.get("orderInfo") +
-                "&orderType=" + queryParams.get("orderType") +
-                "&partnerCode=" + queryParams.get("partnerCode") +
-                "&payType=" + queryParams.get("payType") +
-                "&requestId=" + queryParams.get("requestId") +
-                "&responseTime=" + queryParams.get("responseTime") +
-                "&resultCode=" + queryParams.get("resultCode") +
-                "&transId=" + queryParams.get("transId");
+                "&amount=" + queryParams.getOrDefault("amount", "") +
+                "&extraData=" + queryParams.getOrDefault("extraData", "") +
+                "&message=" + queryParams.getOrDefault("message", "") +
+                "&orderId=" + queryParams.getOrDefault("orderId", "") +
+                "&orderInfo=" + queryParams.getOrDefault("orderInfo", "") +
+                "&orderType=" + queryParams.getOrDefault("orderType", "") +
+                "&partnerCode=" + queryParams.getOrDefault("partnerCode", "") +
+                "&payType=" + queryParams.getOrDefault("payType", "") +
+                "&requestId=" + queryParams.getOrDefault("requestId", "") +
+                "&responseTime=" + queryParams.getOrDefault("responseTime", "") +
+                "&resultCode=" + queryParams.getOrDefault("resultCode", "") +
+                "&transId=" + queryParams.getOrDefault("transId", "");
 
         String expectedSignature = MoMoConfig.hmacSHA256(rawHash, moMoConfig.getSecretKey());
         return expectedSignature.equals(queryParams.get("signature"));
