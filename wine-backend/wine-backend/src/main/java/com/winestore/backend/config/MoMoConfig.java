@@ -22,7 +22,7 @@ public class MoMoConfig {
     @Value("${momo.endpoint:https://test-payment.momo.vn/v2/gateway/api/create}")
     private String endpoint;
 
-    @Value("${momo.returnUrl:${VNPAY_RETURN_URL:http://localhost:3000/payment/result}}")
+    @Value("${momo.returnUrl:${VNPAY_RETURN_URL:https://tttn-web-wine.vercel.app/payment/result}}")
     private String returnUrl;
 
     @Value("${momo.notifyUrl:${MOMO_NOTIFY_URL:http://localhost:8080/api/payment/notify/momo}}")
