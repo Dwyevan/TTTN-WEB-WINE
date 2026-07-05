@@ -211,8 +211,8 @@ const Cart = () => {
           </div>
 
           {/* TỔNG KẾT ĐƠN HÀNG */}
-          <div className="col-lg-4">
-            <div className="card luxury-card sticky-top bg-white" style={{ top: "100px" }}>
+          <div className="col-lg-4 align-self-start">
+            <div className="card luxury-card sticky-top bg-white" style={{ top: "100px", zIndex: 1 }}>
               <div className="card-body p-4 p-lg-5">
                 <h5 className="fw-bold mb-4 border-bottom pb-3" style={{ color: '#1a1a1a' }}>Hóa đơn chi tiết</h5>
                 

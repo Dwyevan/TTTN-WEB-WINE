@@ -381,8 +381,8 @@ const Checkout = () => {
             </div>
 
             {/* BÊN PHẢI: TÓM TẮT ĐƠN HÀNG */}
-            <div className="col-lg-4">
-              <div className="card luxury-card overflow-hidden sticky-top bg-white" style={{top: '100px'}}>
+            <div className="col-lg-4 align-self-start">
+              <div className="card luxury-card overflow-hidden sticky-top bg-white" style={{top: '100px', zIndex: 1}}>
                 <div className="card-header bg-white p-4 border-bottom">
                   <h5 className="mb-0 fw-bold" style={{ color: '#1a1a1a' }}>Đơn hàng của bạn</h5>
                 </div>
