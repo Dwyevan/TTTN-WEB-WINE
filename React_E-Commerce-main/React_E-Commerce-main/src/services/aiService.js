@@ -1,4 +1,4 @@
-﻿import axios from "axios";
+import axios from "axios";
 
 import API_BASE_URL from '../config';
 // Lấy sessionId từ localStorage (nếu chưa có thì tự sinh ra)

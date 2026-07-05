@@ -1,4 +1,4 @@
-﻿// AdminStats component giờ đã được tích hợp trực tiếp vào AdminDashboard.
+// AdminStats component giờ đã được tích hợp trực tiếp vào AdminDashboard.
 // File này được giữ lại để backward-compatible nếu có nơi khác import.
 // Nếu muốn dùng widget stats nhỏ ở bất kỳ đâu, import component này.
 

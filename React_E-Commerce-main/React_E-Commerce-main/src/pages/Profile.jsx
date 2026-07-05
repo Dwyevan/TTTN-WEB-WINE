@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navbar, Footer, Pagination } from '../components';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';

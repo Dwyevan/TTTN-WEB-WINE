@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Footer, Navbar } from "../components";
 import axios from "axios";
 import toast from "react-hot-toast";
