@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useMemo } from "react";
+﻿import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { ConfirmModal, LoadingSpinner, EmptyState } from "../components";
 
+import API_BASE_URL from '../config';
 const AdminCouponList = () => {
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +33,7 @@ const AdminCouponList = () => {
   const fetchCoupons = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:8080/api/coupons");
+      const res = await axios.get(`${API_BASE_URL}/api/coupons`);
       setCoupons(res.data);
     } catch (error) {
       toast.error("Không thể tải danh sách mã giảm giá");
@@ -84,10 +85,10 @@ const AdminCouponList = () => {
     const loadingToast = toast.loading(isEditing ? "Đang cập nhật mã..." : "Đang tạo mã giảm giá...");
     try {
       if (isEditing) {
-        await axios.put(`http://localhost:8080/api/coupons/${formData.id}`, payload);
+        await axios.put(`${API_BASE_URL}/api/coupons/${formData.id}`, payload);
         toast.success("Cập nhật mã thành công!", { id: loadingToast });
       } else {
-        await axios.post("http://localhost:8080/api/coupons", payload);
+        await axios.post(`${API_BASE_URL}/api/coupons`, payload);
         toast.success("Tạo mã giảm giá thành công!", { id: loadingToast });
       }
       fetchCoupons();
@@ -123,7 +124,7 @@ const AdminCouponList = () => {
 
   const toggleActive = async (id, currentStatus) => {
     try {
-      await axios.put(`http://localhost:8080/api/coupons/${id}`, { active: !currentStatus });
+      await axios.put(`${API_BASE_URL}/api/coupons/${id}`, { active: !currentStatus });
       toast.success(currentStatus ? "Đã vô hiệu hóa mã" : "Đã kích hoạt mã");
       fetchCoupons();
     } catch (error) {
@@ -138,7 +139,7 @@ const AdminCouponList = () => {
     if (!id) return;
     const loadingToast = toast.loading("Đang xóa...");
     try {
-      await axios.delete(`http://localhost:8080/api/coupons/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/coupons/${id}`);
       toast.success("Đã xóa mã giảm giá!", { id: loadingToast });
       setCoupons(coupons.filter(c => c.id !== id));
       setDeleteModal({ isOpen: false, id: null });

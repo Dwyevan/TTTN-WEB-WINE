@@ -1,0 +1,334 @@
+﻿
+C:\Users\LIGION\.gemini\antigravity-ide\brain\88bbcfe3-0cd9-4579-90cd-f6678ba20a65\.system_generated\logs\transcript_fu
+ll.jsonl:905:{"step_index":918,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-07-03T16:09:34Z",
+"content":"Created At: 2026-07-03T16:09:34Z\nCompleted At: 2026-07-03T16:09:34Z\nFile Path: 
+`file:///d:/TTTN-WEB-WINE-main/React_E-Commerce-main/React_E-Commerce-main/src/pages/Product.jsx`\nTotal Lines: 
+549\nTotal Bytes: 33617\nShowing lines 1 to 549\nThe following code has been modified to include a line number before 
+every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code 
+should remove the line number, colon, and leading space.\n1: import React, { useEffect, useState } from \"react\";\n2: 
+import { Link, useParams, useNavigate } from \"react-router-dom\";\n3: import Marquee from \"react-fast-marquee\";\n4: 
+import { useDispatch, useSelector } from \"react-redux\";\n5: import { addCart, toggleWishlist } from 
+\"../redux/action\";\n6: import axios from \"axios\";\n7: import { Footer, Navbar } from \"../components\";\n8: import 
+toast from \"react-hot-toast\";\n9: \n10: const Product = () => {\n11:   const { id } = useParams();\n12:   const 
+dispatch = useDispatch();\n13:   const navigate = useNavigate();\n14:   const user = useSelector((state) => 
+state.user?.user);\n15:   const wishlist = useSelector((state) => state.handleWishlist);\n16: \n17:   const [product, 
+setProduct] = useState({});\n18:   const [similarProducts, setSimilarProducts] = useState([]);\n19:   const 
+[feedbacks, setFeedbacks] = useState([]);\n20:   const [loading, setLoading] = useState(true);\n21: \n22:   const 
+[quantity, setQuantity] = useState(1);\n23:   const [activeTab, setActiveTab] = useState(\"description\");\n24:   
+const [userComment, setUserComment] = useState(\"\");\n25:   const [userRating, setUserRating] = useState(5);\n26:   
+const [submitting, setSubmitting] = useState(false);\n27:   const [reviewSort, setReviewSort] = 
+useState(\"newest\");\n28:   \n29:   // Trạng thái cho tính năng Zoom (Magnifier)\n30:   const [zoomStyle, 
+setZoomStyle] = useState({ display: 'none' });\n31: \n32:   const DEFAULT_IMAGE = 
+\"https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=400&auto=format&fit=crop\";\n33: \n34:   
+useEffect(() => {\n35:     const getProductData = async () => {\n36:       window.scrollTo(0, 0);\n37:       
+setLoading(true);\n38:       try {\n39:         const res = await 
+axios.get(`http://localhost:8080/api/wines/${id}`);\n40:         setProduct(res.data);\n41: \n42:         const resFb 
+= await axios.get(`http://localhost:8080/api/feedbacks/product?name=${res.data.name}`);\n43:         
+setFeedbacks(resFb.data);\n44: \n45:         const resAll = await axios.get(`http://localhost:8080/api/wines`);\n46:   
+      setSimilarProducts(resAll.data.filter(item => item.origin === res.data.origin && item.id !== res.data.id));\n47: 
+      } catch (error) {\n48:         toast.error(\"Không thể kết nối đến máy chủ!\");\n49:       } finally {\n50:      
+   setLoading(false);\n51:       }\n52:     };\n53:     getProductData();\n54:   }, [id]);\n55: \n56:   const 
+originalPrice = product.price || 0;\n57:   const discount = product.discountPercent || 0;\n58:   const salePrice = 
+originalPrice * (1 - discount / 100);\n59:   const totalPrice = salePrice * quantity; // Tính tổng tiền theo số 
+lượng\n60:   const hasDiscount = discount > 0;\n61: \n62:   const handleAddToCart = (silent = false) => {\n63:     
+const productToCart = { ...product, price: salePrice }; \n64:     for (let i = 0; i < quantity; i++) {\n65:       
+dispatch(addCart(productToCart));\n66:     }\n67:     if(!silent) toast.success(`Đã thêm ${quantity} chai vào giỏ 
+hàng!`);\n68:   };\n69: \n70:   const handleBuyNow = () => {\n71:     handleAddToCart(true);\n72:     
+navigate(\"/checkout\");\n73:   };\n74: \n75:   const handlePostFeedback = async (e) => {\n76:     
+e.preventDefault();\n77:     if (!userComment.trim()) return toast.error(\"Vui lòng nhập nội dung đánh giá!\");\n78:   
+  setSubmitting(true);\n79:     try {\n80:       const fbData = {\n81:         fullName: user?.name || \"Khách hàng ẩn 
+danh\",\n82:         email: user?.email || \"guest@winestore.com\",\n83:         subject: product.name,\n84:         
+message: `[${userRating} SAO] - ${userComment}`\n85:       };\n86:       await 
+axios.post(\"http://localhost:8080/api/feedbacks\", fbData);\n87:       toast.success(\"Đánh giá của bạn đã được 
+gửi!\");\n88:       setUserComment(\"\");\n89:       const resFb = await 
+axios.get(`http://localhost:8080/api/feedbacks/product?name=${product.name}`);\n90:       
+setFeedbacks(resFb.data);\n91:     } catch (err) {\n92:       toast.error(\"Lỗi khi gửi đánh giá!\");\n93:     } 
+finally {\n94:       setSubmitting(false);\n95:     }\n96:   };\n97: \n98:   const handleMouseMove = (e) => {\n99:     
+const { left, top, width, height } = e.currentTarget.getBoundingClientRect();\n100:     const x = ((e.pageX - left) / 
+width) * 100;\n101:     const y = ((e.pageY - top) / height) * 100;\n102:     setZoomStyle({\n103:       display: 
+'block',\n104:       backgroundPosition: `${x}% ${y}%`,\n105:       backgroundImage: `url(${product.imageUrl || 
+DEFAULT_IMAGE})`,\n106:       backgroundSize: '250%'\n107:     });\n108:   };\n109: \n110:   const handleMouseLeave = 
+() => {\n111:     setZoomStyle({ display: 'none' });\n112:   };\n113: \n114:   if (loading) return (\n115:     <div 
+className=\"d-flex justify-content-center align-items-center vh-100\">\n116:       <div className=\"spinner-border 
+text-danger\" role=\"status\"></div>\n117:     </div>\n118:   );\n119: \n120:   return (\n121:     <>\n122:       
+<Navbar />\n123:       <div className=\"container my-5\">\n124:         <style>{`\n125:           .img-hover-zoom 
+{\n126:             transition: transform 0.4s ease;\n127:           }\n128:           .img-hover-zoom:hover {\n129:   
+          transform: scale(1.05);\n130:           }\n131:           .btn-burgundy {\n132:             
+background-color: #722f37;\n133:             color: #fff;\n134:             transition: all 0.3s;\n135:           
+}\n136:           .btn-burgundy:hover {\n137:             background-color: #5c242c;\n138:             color: 
+#fff;\n139:             box-shadow: 0 5px 15px rgba(114,47,55,0.2);\n140:           }\n141:           
+.btn-outline-gold {\n142:             border: 2px solid #d4af37;\n143:             color: #d4af37;\n144:             
+transition: all 0.3s;\n145:             background: transparent;\n146:           }\n147:           
+.btn-outline-gold:hover {\n148:             background-color: #d4af37;\n149:             color: #fff;\n150:           
+}\n151:           .luxury-card-related {\n152:             border: 1px solid #f0f0f0;\n153:             border-radius: 
+16px;\n154:             box-shadow: 0 5px 15px rgba(0,0,0,0.03);\n155:             transition: all 0.3s ease;\n156:    
+       }\n157:           .luxury-card-related:hover {\n158:             box-shadow: 0 10px 25px 
+rgba(114,47,55,0.1);\n159:             transform: translateY(-5px);\n160:           }\n161:         `}</style>\n162:   
+      <div className=\"row g-5\">\n163:           {/* PHẦN HÌNH ẢNH SẢN PHẨM VỚI MAGNIFIER */}\n164:           <div 
+className=\"col-md-5\">\n165:             <div className=\"position-relative border-0 rounded-4 bg-light p-5 shadow-sm 
+sticky-top d-flex justify-content-center align-items-center\" style={{top: \"110px\", minHeight: '500px'}}>\n166:      
+         {hasDiscount && (\n167:                 <div className=\"position-absolute top-0 start-0 m-3 z-3\">\n168:     
+                <span className=\"badge px-3 py-2 rounded-pill shadow-sm\" style={{ background: '#722f37' }}>\n169:    
+                     <i className=\"fa fa-bolt me-1 text-warning\"></i> GIẢM {discount}%\n170:                     
+</span>\n171:                 </div>\n172:               )}\n173:               <div \n174:                 
+className=\"product-image-container w-100 position-relative\" \n175:                 
+onMouseMove={handleMouseMove}\n176:                 onMouseLeave={handleMouseLeave}\n177:                 style={{ 
+cursor: 'crosshair', height: '400px', display: 'flex', justifyContent: 'center' }}\n178:               >\n179:         
+        <img \n180:                   src={product.imageUrl || DEFAULT_IMAGE} \n181:                   
+className=\"img-fluid\" \n182:                   alt={product.name} \n183:                   style={{ maxHeight: 
+'100%', objectFit: 'contain', mixBlendMode: 'multiply' }}\n184:                 />\n185:                 <div \n186:   
+                className=\"zoom-lens position-absolute shadow-lg border rounded-circle\"\n187:                   
+style={{\n188:                     ...zoomStyle,\n189:                     width: '180px',\n190:                     
+height: '180px',\n191:                     pointerEvents: 'none',\n192:                     top: '50%',\n193:          
+           left: '110%',\n194:                     transform: 'translateY(-50%)',\n195:                     
+backgroundColor: '#fff',\n196:                     zIndex: 1000\n197:                   }}\n198:                 
+></div>\n199:               </div>\n200:             </div>\n201:           </div>\n202: \n203:           {/* PHẦN CHI 
+TIẾT NGHIỆP VỤ */}\n204:           <div className=\"col-md-7\">\n205:             <div className=\"ps-md-4\">\n206:    
+             <nav className=\"small mb-3 text-muted fw-bold text-uppercase\" style={{ letterSpacing: '1px' }}>\n207:   
+                  {product.brand} <span className=\"mx-2\">•</span> {product.origin}\n208:                 
+</nav>\n209:                 <h1 className=\"fw-bold mb-3 text-dark\" style={{ fontSize: '2.5rem', lineHeight: '1.2' 
+}}>{product.name}</h1>\n210:                 \n211:                 <div className=\"d-flex align-items-center mb-4 
+pb-3 border-bottom\">\n212:                     <div className=\"me-3\" style={{ color: '#d4af37' }}>\n213:            
+             {[...Array(5)].map((_, i) => (\n214:                             <i key={i} className={`fa ${i < 4 ? 
+'fa-star' : 'fa-star-half-o'}`}></i>\n215:                         ))}\n216:                         <span 
+className=\"text-muted small ms-2\">({feedbacks.length} Đánh giá)</span>\n217:                     </div>\n218:        
+             <div className=\"border-start ps-3 text-muted small\">\n219:                         Đã bán: <span 
+className=\"fw-bold text-dark\">2.4k</span>\n220:                     </div>\n221:                 </div>\n222: \n223: 
+                {/* GIÁ CẢ & TỔNG TÍNH */}\n224:                 <div className=\"p-4 rounded-4 mb-4\" style={{ 
+background: 'rgba(114,47,55,0.03)', border: '1px solid rgba(114,47,55,0.1)' }}>\n225:                     <div 
+className=\"d-flex align-items-baseline flex-wrap gap-3\">\n226:                         <h2 className=\"fw-bold 
+mb-0\" style={{ color: '#722f37' }}>\n227:                             {salePrice.toLocaleString()} <small 
+className=\"fs-6\">VNĐ</small>\n228:                         </h2>\n229:                         {hasDiscount && 
+(\n230:                             <span className=\"text-muted text-decoration-line-through\">\n231:                 
+                {originalPrice.toLocaleString()} VNĐ\n232:                             </span>\n233:                   
+      )}\n234:                     </div>\n235:                     <div className=\"mt-2 text-muted small\" style={{ 
+fontStyle: 'italic' }}>\n236:                         * Giá đã bao gồm thuế VAT và phí nhập khẩu\n237:                 
+    </div>\n238:                 </div>\n239: \n240:                 {/* THÔNG TIN KHO HÀNG */}\n241:                 
+<div className=\"mb-4\">\n242:                     <div className=\"d-flex align-items-center p-3 rounded-4 bg-white 
+shadow-sm\" style={{ border: '1px solid #f0f0f0' }}>\n243:                         <div className={`rounded-circle p-2 
+me-3 d-flex align-items-center justify-content-center`} \n244:                              style={{ width: '40px', 
+height: '40px', background: product.stock > 0 ? 'rgba(40,167,69,0.1)' : 'rgba(220,53,69,0.1)', color: product.stock > 
+0 ? '#28a745' : '#dc3545' }}>\n245:                             <i className={`fa ${product.stock > 0 ? 'fa-check' : 
+'fa-times'}`}></i>\n246:                         </div>\n247:                         <div>\n248:                      
+       <div className=\"fw-bold text-dark\">Tình trạng kho</div>\n249:                             <div 
+className=\"small text-muted\">\n250:                                 {product.stock > 0 ? `Còn ${product.stock} chai 
+sẵn sàng giao ngay` : \"Hiện đã hết hàng\"}\n251:                             </div>\n252:                         
+</div>\n253:                     </div>\n254:                 </div>\n255: \n256:                 {/* LỰA CHỌN SỐ 
+LƯỢNG & TẠM TÍNH */}\n257:                 <div className=\"card border-0 shadow-sm rounded-4 p-4 mb-4\" style={{ 
+background: '#fff' }}>\n258:                     <div className=\"row align-items-center g-3\">\n259:                  
+       <div className=\"col-auto\">\n260:                             <label className=\"small fw-bold d-block mb-2 
+text-muted text-uppercase\" style={{ letterSpacing: '1px' }}>SỐ LƯỢNG:</label>\n261:                             <div 
+className=\"d-flex align-items-center border rounded-pill overflow-hidden\" style={{ width: \"130px\", borderColor: 
+'#e0e0e0' }}>\n262:                                 <button className=\"btn btn-light px-3 border-0 bg-transparent 
+text-dark fw-bold\" onClick={() => setQuantity(q => q > 1 ? q - 1 : 1)}>-</button>\n263:                               
+  <input type=\"text\" className=\"form-control text-center fw-bold border-0 bg-transparent px-0\" value={quantity} 
+readOnly />\n264:                                 <button className=\"btn btn-light px-3 border-0 bg-transparent 
+text-dark fw-bold\" onClick={() => setQuantity(q => q + 1)}>+</button>\n265:                             </div>\n266:  
+                       </div>\n267:                         <div className=\"col text-md-end\">\n268:                  
+           <div className=\"small text-muted mb-1 text-uppercase\" style={{ letterSpacing: '1px' }}>Tổng tiền tạm 
+tính:</div>\n269:                             <h3 className=\"fw-bold mb-0\" style={{ color: '#1a1a1a' 
+}}>{totalPrice.toLocaleString()} VNĐ</h3>\n270:                         </div>\n271:                     </div>\n272: 
+\n273:                     <div className=\"row g-3 mt-4\">\n274:                         <div className=\"col-12 
+d-flex gap-2\">\n275:                             <button \n276:                                 className=\"btn 
+rounded-pill d-flex align-items-center justify-content-center\"\n277:                                 onClick={() => 
+{\n278:                                     dispatch(toggleWishlist(product));\n279:                                   
+  toast.success(wishlist.find(x => x.id === product.id) ? \"Đã xóa khỏi yêu thích\" : \"Đã thêm vào yêu 
+thích!\");\n280:                                 }}\n281:                                 style={{ \n282:              
+                       width: '50px', height: '50px',\n283:                                     border: '1px solid 
+#e0e0e0', background: '#fff',\n284:                                     color: wishlist?.find(x => x.id === 
+product.id) ? '#722f37' : '#999',\n285:                                     transition: 'all 0.3s'\n286:               
+                  }}\n287:                                 title=\"Yêu thích\"\n288:                             
+>\n289:                                 <i className={`fa fs-5 ${wishlist?.find(x => x.id === product.id) ? 'fa-heart' 
+: 'fa-heart-o'}`}></i>\n290:                             </button>\n291:                             <button 
+className=\"btn btn-outline-gold flex-grow-1 py-3 rounded-pill fw-bold text-uppercase d-flex align-items-center 
+justify-content-center gap-2\" \n292:                                     onClick={() => handleAddToCart()} 
+disabled={product.stock <= 0} style={{ letterSpacing: '1px', fontSize: '14px' }}>\n293:                                
+ <i className=\"fa fa-cart-plus\"></i> THÊM VÀO GIỎ\n294:                             </button>\n295:                  
+       </div>\n296:                         <div className=\"col-12 mt-2\">\n297:                             <button 
+className=\"btn btn-burgundy btn-lg w-100 py-3 rounded-pill fw-bold text-uppercase shadow-sm\" \n298:                  
+                   onClick={handleBuyNow} disabled={product.stock <= 0} style={{ letterSpacing: '1px', fontSize: 
+'14px' }}>\n299:                                 MUA NGAY TẠI NHÀ\n300:                             </button>\n301:    
+                     </div>\n302:                     </div>\n303:                 </div>\n304: \n305:                 
+{/* CAM KẾT */}\n306:                 <div className=\"row g-3 py-4 border-top mt-2\">\n307:                     
+{[\n308:                         {icon: \"fa-shield\", text: \"Chính hãng 100%\"},\n309:                         
+{icon: \"fa-truck\", text: \"Giao nhanh 2H\"},\n310:                         {icon: \"fa-certificate\", text: \"Đầy đủ 
+CO/CQ\"},\n311:                         {icon: \"fa-headphones\", text: \"Hỗ trợ 24/7\"}\n312:                     
+].map((item, idx) => (\n313:                         <div key={idx} className=\"col-6 col-sm-3 text-center\">\n314:    
+                         <div className=\"mb-2\" style={{ color: '#d4af37', fontSize: '1.2rem' }}><i className={`fa 
+${item.icon}`}></i></div>\n315:                             <div className=\"small text-muted fw-bold text-uppercase\" 
+style={{ fontSize: '10px', letterSpacing: '0.5px' }}>{item.text}</div>\n316:                         </div>\n317:      
+               ))}\n318:                 </div>\n319: \n320:                 {/* FOOD PAIRING */}\n321:                
+ {product.foodPairing && (\n322:                     <div className=\"mt-4 p-4 rounded-4 bg-white shadow-sm\" style={{ 
+border: '1px solid #f0f0f0' }}>\n323:                         <h6 className=\"fw-bold mb-3 d-flex align-items-center\" 
+style={{ color: '#722f37', letterSpacing: '0.5px' }}>\n324:                             <i className=\"fa fa-cutlery 
+me-2\"></i> GỢI Ý KẾT HỢP MÓN ĂN\n325:                         </h6>\n326:                         <div 
+className=\"d-flex flex-wrap gap-2\">\n327:                             {product.foodPairing.split(',').map((item, 
+index) => {\n328:                                 const pairingStr = item.trim();\n329:                                
+ let icon = \"fa-utensils\";\n330:                                 if (pairingStr.toLowerCase().includes(\"steak\") || 
+pairingStr.toLowerCase().includes(\"thịt đỏ\")) icon = \"fa-cutlery\";\n331:                                 else if 
+(pairingStr.toLowerCase().includes(\"seafood\") || pairingStr.toLowerCase().includes(\"hải sản\")) icon = 
+\"fa-anchor\";\n332:                                 else if (pairingStr.toLowerCase().includes(\"cheese\") || 
+pairingStr.toLowerCase().includes(\"phô mai\")) icon = \"fa-cube\";\n333:                                 else if 
+(pairingStr.toLowerCase().includes(\"dessert\") || pairingStr.toLowerCase().includes(\"ngọt\")) icon = 
+\"fa-birthday-cake\";\n334:                                 \n335:                                 return (\n336:      
+                               <span key={index} className=\"badge rounded-pill px-3 py-2 d-flex align-items-center 
+fw-normal shadow-sm\" style={{ background: 'rgba(114,47,55,0.05)', color: '#722f37', border: '1px solid 
+rgba(114,47,55,0.1)' }}>\n337:                                         <i className={`fa ${icon} me-2`} style={{ 
+color: '#d4af37' }}></i> {pairingStr}\n338:                                     </span>\n339:                          
+       );\n340:                             })}\n341:                         </div>\n342:                     
+</div>\n343:                 )}\n344:             </div>\n345:           </div>\n346:         </div>\n347: \n348:      
+   {/* TỔ HỢP TAB THÔNG TIN */}\n349:         <div className=\"row mt-5\">\n350:             <div 
+className=\"col-12\">\n351:                 <div className=\"bg-white rounded-4 shadow-sm p-4 p-md-5 border-0\" 
+style={{ border: '1px solid #f0f0f0' }}>\n352:                     <ul className=\"nav nav-pills mb-4 border-bottom 
+pb-3 gap-2\">\n353:                         {[\n354:                             {id: 'description', label: 'MÔ TẢ 
+HƯƠNG VỊ'},\n355:                             {id: 'specs', label: 'THÔNG SỐ CHI TIẾT'},\n356:                         
+    {id: 'reviews', label: `ĐÁNH GIÁ (${feedbacks.length})`}\n357:                         ].map(tab => (\n358:        
+                     <li className=\"nav-item\" key={tab.id}>\n359:                                 <button \n360:     
+                                className={`nav-link rounded-pill px-4 fw-bold transition-all ${activeTab === tab.id ? 
+'shadow-sm' : 'text-muted'}`}\n361:                                     style={{ \n362:                                
+         background: activeTab === tab.id ? '#722f37' : 'transparent',\n363:                                         
+color: activeTab === tab.id ? '#fff' : 'inherit',\n364:                                         letterSpacing: 
+'0.5px',\n365:                                         fontSize: '13px'\n366:                                     
+}}\n367:                                     onClick={() => setActiveTab(tab.id)}\n368:                                
+ >\n369:                                     {tab.label}\n370:                                 </button>\n371:         
+                    </li>\n372:                         ))}\n373:                     </ul>\n374: \n375:               
+      <div className=\"tab-content min-vh-25\">\n376:                         {activeTab === 'description' && (\n377:  
+                           <div className=\"px-md-3 text-muted\" style={{ lineHeight: '1.8', whiteSpace: 'pre-line' 
+}}>\n378:                                 <h5 className=\"fw-bold text-dark mb-4 d-flex align-items-center\">\n379:    
+                                 <div style={{ width: '4px', height: '20px', background: '#d4af37', marginRight: 
+'10px', borderRadius: '2px' }}></div>\n380:                                     Ghi chú từ Sommelier (Chuyên gia 
+rượu)\n381:                                 </h5>\n382:                                 {product.description}\n383:    
+                         </div>\n384:                         )}\n385:                         {activeTab === 'specs' 
+&& (\n386:                             <div className=\"row g-4 px-md-3\">\n387:                                 
+{[\n388:                                     {l: 'Quốc gia', v: product.country || product.origin},\n389:              
+                       {l: 'Vùng làm rượu', v: product.region || 'Không có thông tin'},\n390:                          
+           {l: 'Thương hiệu', v: product.brand},\n391:                                     {l: 'Danh mục', v: 
+product.category},\n392:                                     {l: 'Năm thu hoạch', v: product.vintageYear || 
+'NV'},\n393:                                     {l: 'Giống nho', v: product.grapeVariety || 'Phối trộn 
+(Blend)'},\n394:                                     {l: 'Dung tích', v: product.volume || '750ml'},\n395:             
+                        {l: 'Nồng độ cồn', v: product.alcoholContent ? `${product.alcoholContent}%` : 'Đang cập 
+nhật'},\n396:                                     {l: 'Độ ngọt', v: product.sweetnessLevel || 'Đang cập nhật'},\n397:  
+                                   {l: 'Nhiệt độ phục vụ', v: product.servingTemperature || '16-18°C'}\n398:           
+                      ].map((spec, i) => (\n399:                                     <div key={i} className=\"col-md-6 
+py-3 border-bottom d-flex justify-content-between align-items-center\">\n400:                                         
+<span className=\"text-muted small text-uppercase\" style={{ letterSpacing: '1px' }}>{spec.l}:</span>\n401:            
+                             <span className=\"fw-bold text-dark text-end\">{spec.v}</span>\n402:                      
+               </div>\n403:                                 ))}\n404:                             </div>\n405:         
+                )}\n406:                         {activeTab === 'reviews' && (\n407:                             <div 
+className=\"px-md-3\">\n408:                                 <div className=\"row mb-5 p-4 rounded-4 shadow-sm\" 
+style={{ background: '#fff', border: '1px solid #f0f0f0' }}>\n409:                                     <div 
+className=\"col-md-5 text-center border-end-md d-flex flex-column justify-content-center pe-md-4\">\n410:              
+                           <h1 className=\"display-3 fw-bold mb-0\" style={{ color: '#722f37' }}>\n411:                
+                             {feedbacks.length > 0 \n412:                                                 ? 
+(feedbacks.reduce((acc, fb) => {\n413:                                                     const match = 
+fb.message?.match(/\\[(\\d+)\\s+SAO\\]/);\n414:                                                     return acc + 
+(match ? parseInt(match[1]) : 5);\n415:                                                   }, 0) / 
+feedbacks.length).toFixed(1)\n416:                                                 : \"5.0\"}\n417:                    
+                     </h1>\n418:                                         <div className=\"mb-2 fs-5\" style={{ color: 
+'#d4af37' }}>\n419:                                             <i className=\"fa fa-star\"></i><i className=\"fa 
+fa-star\"></i><i className=\"fa fa-star\"></i><i className=\"fa fa-star\"></i><i className=\"fa fa-star\"></i>\n420:   
+                                      </div>\n421:                                         <div className=\"text-muted 
+small fw-bold text-uppercase\" style={{ letterSpacing: '1px' }}>{feedbacks.length} Đánh giá thực tế</div>\n422:        
+                                 \n423:                                         {/* RATING BREAKDOWN */}\n424:         
+                                <div className=\"mt-4 text-start\">\n425:                                             
+{[5,4,3,2,1].map(star => {\n426:                                                 const count = feedbacks.filter(fb => 
+{\n427:                                                     const match = 
+fb.message?.match(/\\[(\\d+)\\s+SAO\\]/);\n428:                                                     return (match ? 
+parseInt(match[1]) : 5) === star;\n429:                                                 }).length;\n430:               
+                                  const percent = feedbacks.length > 0 ? (count / feedbacks.length) * 100 : 0;\n431:   
+                                              return (\n432:                                                     <div 
+key={star} className=\"d-flex align-items-center mb-2 small\">\n433:                                                   
+      <div className=\"text-muted me-2\" style={{ width: '35px' }}>{star} <i className=\"fa fa-star 
+text-warning\"></i></div>\n434:                                                         <div className=\"progress 
+flex-grow-1\" style={{ height: '6px' }}>\n435:                                                             <div 
+className=\"progress-bar\" style={{ width: `${percent}%`, background: '#722f37' }}></div>\n436:                        
+                                 </div>\n437:                                                         <div 
+className=\"ms-2 text-muted\" style={{ width: '30px', textAlign: 'right' }}>{count}</div>\n438:                        
+                             </div>\n439:                                                 );\n440:                     
+                        })}\n441:                                         </div>\n442:                                 
+    </div>\n443: \n444:                                     <div className=\"col-md-7 ps-md-5 mt-4 mt-md-0\">\n445:    
+                                     <h5 className=\"fw-bold mb-3 text-dark\">Gửi đánh giá của bạn</h5>\n446:          
+                               <div className=\"p-4 rounded-4\" style={{ background: 'rgba(114,47,55,0.03)' }}>\n447:  
+                                           <form onSubmit={handlePostFeedback}>\n448:                                  
+               <div className=\"mb-3 d-flex align-items-center gap-2\">\n449:                                          
+           <span className=\"small fw-bold text-muted text-uppercase\" style={{ letterSpacing: '1px' }}>Đánh 
+giá:</span>\n450:                                                     <div>\n451:                                      
+                   {[1,2,3,4,5].map(s => (\n452:                                                             <i 
+key={s} \n453:                                                                 className={`fa fa-star cursor-pointer 
+ms-1 fs-5 ${userRating >= s ? 'text-warning' : 'text-muted'}`}\n454:                                                   
+              onClick={() => setUserRating(s)}\n455:                                                                 
+style={{cursor: 'pointer', color: userRating >= s ? '#d4af37' : '#e9ecef', transition: 'color 0.2s'}}\n456:            
+                                                 ></i>\n457:                                                         
+))}\n458:                                                     </div>\n459:                                             
+    </div>\n460:                                                 <textarea className=\"form-control rounded-3 mb-3 p-3 
+bg-white\" rows=\"3\" placeholder=\"Chia sẻ cảm nhận của bạn về hương vị, dịch vụ, giao hàng...\" style={{ border: 
+'1px solid #e0e0e0', resize: 'none' }} value={userComment} onChange={(e) => 
+setUserComment(e.target.value)}></textarea>\n461:                                                 <button 
+className=\"btn btn-burgundy rounded-pill px-5 py-2 fw-bold text-uppercase w-100 w-md-auto shadow-sm\" style={{ 
+letterSpacing: '1px', fontSize: '13px' }} type=\"submit\" disabled={submitting}>Gửi nhận xét</button>\n462:            
+                                 </form>\n463:                                         </div>\n464:                    
+                 </div>\n465:                                 </div>\n466:                                 \n467:      
+                           {/* FEEDBACK LIST & SORTING */}\n468:                                 <div 
+className=\"d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom\">\n469:                         
+            <h5 className=\"fw-bold mb-0 text-dark\">Tất cả đánh giá</h5>\n470:                                     
+<select className=\"form-select form-select-sm w-auto rounded-pill px-3 shadow-none border\" style={{ cursor: 
+'pointer' }} value={reviewSort} onChange={e => setReviewSort(e.target.value)}>\n471:                                   
+      <option value=\"newest\">Mới nhất</option>\n472:                                         <option 
+value=\"oldest\">Cũ nhất</option>\n473:                                     </select>\n474:                            
+     </div>\n475: \n476:                                 {feedbacks.length > 0 ? [...feedbacks].sort((a, b) => {\n477: 
+                                    if(reviewSort === 'newest') return new Date(b.createdAt) - new 
+Date(a.createdAt);\n478:                                     return new Date(a.createdAt) - new 
+Date(b.createdAt);\n479:                                 }).map(fb => {\n480:                                     
+const match = fb.message?.match(/\\[(\\d+)\\s+SAO\\]/);\n481:                                     const rating = match 
+? parseInt(match[1]) : 5;\n482:                                     const cleanMessage = 
+fb.message?.replace(/\\[\\d+\\s+SAO\\]\\s*-\\s*/, '');\n483:                                     \n484:                
+                     return (\n485:                                         <div key={fb.id} className=\"mb-4 pb-4 
+border-bottom\">\n486:                                             <div className=\"d-flex justify-content-between 
+mb-2\">\n487:                                                 <div className=\"d-flex align-items-center\">\n488:      
+                                               <div className=\"rounded-circle d-flex align-items-center 
+justify-content-center me-3 fw-bold shadow-sm\" style={{ width: '45px', height: '45px', background: 
+'linear-gradient(135deg, #722f37, #a04050)', color: '#fff', fontSize: '18px' }}>\n489:                                 
+                        {fb.fullName ? fb.fullName.charAt(0).toUpperCase() : 'G'}\n490:                                
+                     </div>\n491:                                                     <div>\n492:                      
+                                   <div className=\"fw-bold text-dark d-flex align-items-center gap-2\">\n493:         
+                                                    {fb.fullName || 'Khách hàng'}\n494:                                
+                             <span className=\"badge rounded-pill bg-success\" style={{ fontSize: '9px', padding: '3px 
+6px' }}><i className=\"fa fa-check-circle me-1\"></i>Đã mua hàng</span>\n495:                                          
+               </div>\n496:                                                         <div className=\"small mt-1\" 
+style={{ color: '#d4af37' }}>\n497:                                                             {[...Array(5)].map((_, 
+i) => <i key={i} className={`fa ${i < rating ? 'fa-star' : 'fa-star-o'} me-1`}></i>)}\n498:                            
+                             </div>\n499:                                                     </div>\n500:             
+                                    </div>\n501:                                                 <div 
+className=\"small text-muted\">{new Date(fb.createdAt).toLocaleDateString('vi-VN')}</div>\n502:                        
+                     </div>\n503:                                             <div className=\"ps-5 ms-3 mt-2 
+text-dark\" style={{ lineHeight: '1.6' }}>{cleanMessage}</div>\n504:                                         
+</div>\n505:                                     );\n506:                                 }) : (\n507:                 
+                    <div className=\"text-center py-5\">\n508:                                         <div 
+className=\"mb-3 d-inline-flex justify-content-center align-items-center rounded-circle\" style={{ width: '60px', 
+height: '60px', background: 'rgba(114,47,55,0.05)' }}>\n509:                                             <i 
+className=\"fa fa-comment-o fa-2x\" style={{ color: '#722f37' }}></i>\n510:                                         
+</div>\n511:                                         <h6 className=\"fw-bold text-dark mb-1\">Chưa có đánh giá 
+nào</h6>\n512:                                         <p className=\"text-muted small\">Hãy trở thành người đầu tiên 
+đánh giá sản phẩm này.</p>\n513:                                     </div>\n514:                                 
+)}\n515:                             </div>\n516:                         )}\n517:                     </div>\n518:    
+             </div>\n519:             </div>\n520:         </div>\n521: \n522:         {/* RELATED PRODUCTS */}\n523:  
+       <div className=\"mt-5 pt-4 border-top\">\n524:           <div className=\"d-flex justify-content-between 
+align-items-center mb-4\">\n525:             <h4 className=\"fw-bold mb-0 text-dark\" style={{ letterSpacing: '1px' 
+}}>CÓ THỂ BẠN CŨNG THÍCH</h4>\n526:             <Link to=\"/product\" className=\"fw-bold text-decoration-none small 
+text-uppercase\" style={{ color: '#722f37', letterSpacing: '0.5px' }}>Khám phá thêm <i className=\"fa fa-arrow-right 
+ms-1\"></i></Link>\n527:           </div>\n528:           <Marquee pauseOnHover={true} speed={50} gradient={false} 
+className=\"py-3\">\n529:             {similarProducts.map(item => (\n530:               <div key={item.id} 
+className=\"card mx-3 bg-white luxury-card-related h-100\" style={{ width: '260px' }}>\n531:                 <div 
+className=\"p-4 bg-light rounded-top d-flex justify-content-center align-items-center\" style={{ borderTopLeftRadius: 
+'16px', borderTopRightRadius: '16px' }}>\n532:                   <img src={item.imageUrl || DEFAULT_IMAGE} 
+className=\"card-img-top mx-auto img-hover-zoom\" style={{ height: '200px', width: 'auto', objectFit: 'contain', 
+mixBlendMode: 'multiply' }} alt={item.name} />\n533:                 </div>\n534:                 <div 
+className=\"card-body text-center p-4\">\n535:                   <h6 className=\"fw-bold text-truncate mb-2 
+text-dark\">{item.name}</h6>\n536:                   <p className=\"fw-bold mb-3\" style={{ color: '#722f37' 
+}}>{item.price?.toLocaleString()} đ</p>\n537:                   <Link to={`/product/${item.id}`} className=\"btn 
+btn-outline-dark btn-sm rounded-pill px-4 w-100 py-2 fw-bold text-uppercase\" style={{ letterSpacing: '0.5px' }}>Xem 
+chi tiết</Link>\n538:                 </div>\n539:               </div>\n540:             ))}\n541:           
+</Marquee>\n542:         </div>\n543:       </div>\n544:       <Footer />\n545:     </>\n546:   );\n547: };\n548: 
+\n549: export default Product;\nThe above content shows the entire, complete file contents of the requested file.\n"}
+
+

@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useMemo } from "react";
+﻿import React, { useState, useEffect, useMemo } from "react";
+import Pagination from "../components/Pagination";
 import axios from "axios";
 import toast from "react-hot-toast";
 
+import API_BASE_URL from '../config';
 const AdminInventory = () => {
   const [products, setProducts] = useState([]);
   const [logs, setLogs] = useState([]);
@@ -12,10 +14,16 @@ const AdminInventory = () => {
   const [restockNote, setRestockNote] = useState("");
   const [selectedWineForLog, setSelectedWineForLog] = useState(null);
   const [wineLogs, setWineLogs] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/wines");
+      const res = await axios.get(`${API_BASE_URL}/api/wines`);
       setProducts(res.data);
     } catch (err) {
       toast.error("Không thể tải sản phẩm");
@@ -40,7 +48,7 @@ const AdminInventory = () => {
     if (!restockQty || parseInt(restockQty) <= 0) { toast.error("Số lượng phải > 0"); return; }
     const loadingToast = toast.loading("Đang nhập kho...");
     try {
-      await axios.post(`http://localhost:8080/api/admin/inventory/restock/${restockModal.id}`, {
+      await axios.post(`${API_BASE_URL}/api/admin/inventory/restock/${restockModal.id}`, {
         quantity: parseInt(restockQty),
         note: restockNote || "Nhập kho bổ sung"
       });
@@ -56,7 +64,7 @@ const AdminInventory = () => {
   const fetchWineLogs = async (wine) => {
     setSelectedWineForLog(wine);
     try {
-      const res = await axios.get(`http://localhost:8080/api/admin/inventory/logs/${wine.id}`);
+      const res = await axios.get(`${API_BASE_URL}/api/admin/inventory/logs/${wine.id}`);
       setWineLogs(res.data);
     } catch (err) {
       toast.error("Không thể tải lịch sử");
@@ -232,13 +240,16 @@ const AdminInventory = () => {
                 if (activeTab === "lowstock") data = stats.lowStock;
                 if (activeTab === "outofstock") data = stats.outOfStock;
                 
-                if (data.length === 0) return (
+                const totalPages = Math.ceil(data.length / itemsPerPage);
+                const paginatedData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+                
+                if (paginatedData.length === 0) return (
                   <tr><td colSpan="8" className="text-center py-5 text-muted">
                     <i className="fa fa-inbox fa-3x mb-3 d-block" style={{ opacity: 0.2 }}></i>Không có sản phẩm nào
                   </td></tr>
                 );
 
-                return data.map(item => {
+                return paginatedData.map(item => {
                   const stock = item.stock ?? item.stockQuantity ?? 0;
                   const minStock = item.minimumStock || 5;
                   const isLow = stock > 0 && stock <= minStock;
@@ -295,6 +306,20 @@ const AdminInventory = () => {
             </tbody>
           </table>
         </div>
+        {(() => {
+            let data = products;
+            if (activeTab === "lowstock") data = stats.lowStock;
+            if (activeTab === "outofstock") data = stats.outOfStock;
+            return (
+                <Pagination 
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(data.length / itemsPerPage)}
+                    onPageChange={setCurrentPage}
+                    totalItems={data.length}
+                    itemsPerPage={itemsPerPage}
+                />
+            );
+        })()}
       </div>
     </div>
   );

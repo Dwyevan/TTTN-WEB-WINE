@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { Footer, Navbar } from "../components";
 import axios from "axios";
 import toast from "react-hot-toast";
 
+import API_BASE_URL from '../config';
 const ContactPage = () => {
   // 1. Khởi tạo dữ liệu đúng với Entity Backend (fullName, email, phone, subject, message)
   const [formData, setFormData] = useState({
@@ -33,7 +34,7 @@ const ContactPage = () => {
     setIsSubmitting(true);
     try {
       // Gọi API Backend thực tế (Lưu ý: /api/feedbacks)
-      await axios.post("http://localhost:8080/api/feedbacks", formData);
+      await axios.post(`${API_BASE_URL}/api/feedbacks`, formData);
       
       toast.success("Yêu cầu của bạn đã được gửi thành công! Wine Store sẽ liên hệ sớm.");
       

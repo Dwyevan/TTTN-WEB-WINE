@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import Marquee from "react-fast-marquee";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,6 +7,7 @@ import axios from "axios";
 import { Footer, Navbar } from "../components";
 import toast from "react-hot-toast";
 
+import API_BASE_URL from '../config';
 const Product = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -36,13 +37,13 @@ const Product = () => {
       window.scrollTo(0, 0);
       setLoading(true);
       try {
-        const res = await axios.get(`http://localhost:8080/api/wines/${id}`);
+        const res = await axios.get(`${API_BASE_URL}/api/wines/${id}`);
         setProduct(res.data);
 
-        const resFb = await axios.get(`http://localhost:8080/api/feedbacks/product?name=${res.data.name}`);
+        const resFb = await axios.get(`${API_BASE_URL}/api/feedbacks/product?name=${res.data.name}`);
         setFeedbacks(resFb.data);
 
-        const resAll = await axios.get(`http://localhost:8080/api/wines`);
+        const resAll = await axios.get(`${API_BASE_URL}/api/wines`);
         setSimilarProducts(resAll.data.filter(item => item.origin === res.data.origin && item.id !== res.data.id));
       } catch (error) {
         toast.error("Không thể kết nối đến máy chủ!");
@@ -83,10 +84,10 @@ const Product = () => {
         subject: product.name,
         message: `[${userRating} SAO] - ${userComment}`
       };
-      await axios.post("http://localhost:8080/api/feedbacks", fbData);
+      await axios.post(`${API_BASE_URL}/api/feedbacks`, fbData);
       toast.success("Đánh giá của bạn đã được gửi!");
       setUserComment("");
-      const resFb = await axios.get(`http://localhost:8080/api/feedbacks/product?name=${product.name}`);
+      const resFb = await axios.get(`${API_BASE_URL}/api/feedbacks/product?name=${product.name}`);
       setFeedbacks(resFb.data);
     } catch (err) {
       toast.error("Lỗi khi gửi đánh giá!");

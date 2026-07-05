@@ -1,7 +1,20 @@
+// Lấy key dựa vào user
+const getCartKey = () => {
+  try {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      return `cart_${user.username || user.email}`;
+    }
+  } catch (error) {}
+  return "cart_guest";
+};
+
 // Lấy dữ liệu từ localStorage an toàn
 const getInitialCart = () => {
   try {
-    const storedCart = localStorage.getItem("cart");
+    const key = getCartKey();
+    const storedCart = localStorage.getItem(key);
     return storedCart ? JSON.parse(storedCart) : [];
   } catch (error) {
     return [];
@@ -11,6 +24,7 @@ const getInitialCart = () => {
 const handleCart = (state = getInitialCart(), action) => {
   const product = action.payload;
   let updatedCart;
+  const cartKey = getCartKey(); // Luôn lấy key hiện tại trước khi lưu
 
   switch (action.type) {
     case "ADDITEM":
@@ -26,7 +40,7 @@ const handleCart = (state = getInitialCart(), action) => {
         // Ép kiểu price về số để tránh NaN khi tính toán ở Component
         updatedCart = [...state, { ...product, qty: 1, price: Number(product.price) }];
       }
-      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      localStorage.setItem(cartKey, JSON.stringify(updatedCart));
       return updatedCart;
 
     case "DELITEM":
@@ -46,13 +60,16 @@ const handleCart = (state = getInitialCart(), action) => {
           x.id === product.id ? { ...x, qty: x.qty - 1 } : x
         );
       }
-      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      localStorage.setItem(cartKey, JSON.stringify(updatedCart));
       return updatedCart;
 
-    // Nên thêm case xóa sạch giỏ hàng sau khi đặt hàng thành công
+    case "EMPTY_CART":
     case "CLEAR_CART":
-      localStorage.removeItem("cart");
+      localStorage.removeItem(cartKey);
       return [];
+
+    case "SYNC_CART": // Gọi khi login / logout để tải lại giỏ hàng
+      return getInitialCart();
 
     default:
       return state;

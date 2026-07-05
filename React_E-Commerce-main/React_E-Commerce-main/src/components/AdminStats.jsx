@@ -1,10 +1,11 @@
-// AdminStats component giờ đã được tích hợp trực tiếp vào AdminDashboard.
+﻿// AdminStats component giờ đã được tích hợp trực tiếp vào AdminDashboard.
 // File này được giữ lại để backward-compatible nếu có nơi khác import.
 // Nếu muốn dùng widget stats nhỏ ở bất kỳ đâu, import component này.
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+import API_BASE_URL from '../config';
 const AdminStats = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,7 +13,7 @@ const AdminStats = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/admin/dashboard/stats");
+        const res = await axios.get(`${API_BASE_URL}/api/admin/dashboard/stats`);
         setStats(res.data);
       } catch (error) {
         console.error("Lỗi thống kê:", error);

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { ConfirmModal, LoadingSpinner, EmptyState } from "../components";
 
+import API_BASE_URL from '../config';
 const AdminUserList = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,7 +12,7 @@ const AdminUserList = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:8080/api/users");
+      const res = await axios.get(`${API_BASE_URL}/api/users`);
       setUsers(res.data);
     } catch (err) {
       toast.error("Không thể tải danh sách người dùng!");
@@ -37,7 +38,7 @@ const AdminUserList = () => {
     if (!id) return;
     const loadingToast = toast.loading("Đang xử lý...");
     try {
-      await axios.patch(`http://localhost:8080/api/users/${id}/toggle-lock`);
+      await axios.patch(`${API_BASE_URL}/api/users/${id}/toggle-lock`);
       toast.success("Đã cập nhật trạng thái tài khoản", { id: loadingToast });
       fetchUsers(); // Tải lại danh sách
     } catch (err) {

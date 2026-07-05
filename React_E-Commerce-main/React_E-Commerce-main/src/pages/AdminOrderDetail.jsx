@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 
+import API_BASE_URL from '../config';
 const AdminOrderDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const AdminOrderDetail = () => {
 
   const fetchOrderDetail = async () => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/orders/${id}`);
+      const res = await axios.get(`${API_BASE_URL}/api/orders/${id}`);
       setOrder(res.data);
     } catch (err) {
       console.error(err);
@@ -29,7 +30,7 @@ const AdminOrderDetail = () => {
     fetchOrderDetail(); 
     const fetchSettings = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/settings");
+        const res = await axios.get(`${API_BASE_URL}/api/settings`);
         if (res.data) {
           setShippingConfig({
             SHIPPING_THRESHOLD: parseInt(res.data.FREE_SHIPPING_THRESHOLD) || 2000000,
@@ -46,7 +47,7 @@ const AdminOrderDetail = () => {
   const handleUpdateStatus = async (newStatus) => {
     const loadingToast = toast.loading("Đang cập nhật...");
     try {
-      await axios.patch(`http://localhost:8080/api/orders/${id}/status?status=${newStatus}`);
+      await axios.patch(`${API_BASE_URL}/api/orders/${id}/status?status=${newStatus}`);
       toast.success(`Đã chuyển sang: ${statusConfig[newStatus]?.label || newStatus}`, { id: loadingToast });
       fetchOrderDetail();
     } catch (error) {
@@ -205,7 +206,7 @@ const AdminOrderDetail = () => {
                   <div key={i} className="d-flex align-items-center p-3 rounded-4" style={{ border: '1px solid #f0f0f0', transition: 'all 0.2s', background: '#fff', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
                     <div className="d-flex align-items-center justify-content-center flex-shrink-0 bg-white" style={{ width: '80px', height: '80px', borderRadius: '12px', border: '1px solid #eaeaea', overflow: 'hidden' }}>
                       {item.wine?.imageUrl ? (
-                        <img src={item.wine.imageUrl.startsWith('http') ? item.wine.imageUrl : `http://localhost:8080${item.wine.imageUrl}`} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '5px' }} />
+                        <img src={item.wine.imageUrl.startsWith('http') ? item.wine.imageUrl : `${API_BASE_URL}${item.wine.imageUrl}`} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '5px' }} />
                       ) : (
                         <div className="w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(114,47,55,0.05)' }}>
                            <i className="fa fa-wine-bottle fs-3" style={{ color: '#722f37', opacity: 0.8 }}></i>

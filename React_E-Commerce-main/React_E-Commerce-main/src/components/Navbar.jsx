@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 const Navbar = () => {
     const state = useSelector(state => state.handleCart);
     const wishlist = useSelector(state => state.handleWishlist);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const location = useLocation();
     const dropdownRef = useRef(null); 
     const productDropdownRef = useRef(null); // Ref riêng cho menu Sản phẩm
@@ -53,6 +54,7 @@ const Navbar = () => {
         localStorage.removeItem("user");
         setUser(null);
         setShowUserMenu(false);
+        dispatch({ type: "SYNC_CART" });
         navigate("/login");
     };
 
@@ -268,12 +270,7 @@ const Navbar = () => {
                             </div>
                         )}
 
-                        <NavLink to="/wishlist" className={`btn btn-sm rounded-circle position-relative shadow-sm d-flex align-items-center justify-content-center me-2 ${isScrolled ? 'text-dark' : 'btn-dark'}`} style={{ background: isScrolled ? '#f8f9fa' : '#1a1a1a', border: 'none', width: '32px', height: '32px' }}>
-                            <i className="fa fa-heart"></i> 
-                            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill" style={{ background: '#722f37', color: '#fff', fontSize: '10px', border: '2px solid #fff' }}>
-                                {wishlist.length}
-                            </span>
-                        </NavLink>
+
 
                         <NavLink to="/cart" className={`btn btn-sm rounded-pill px-3 position-relative shadow-sm d-flex align-items-center gap-2 ${isScrolled ? 'text-dark' : 'btn-dark'}`} style={{ background: isScrolled ? '#f8f9fa' : '#1a1a1a', border: 'none', height: '32px' }}>
                             <i className="fa fa-shopping-bag"></i> 

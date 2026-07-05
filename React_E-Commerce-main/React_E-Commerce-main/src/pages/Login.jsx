@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { Footer, Navbar } from "../components";
 import axios from "axios";
 import { toast } from "react-hot-toast"; // Dùng toast thay alert để chuyên nghiệp hơn
+import API_BASE_URL from '../config';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
@@ -10,7 +12,11 @@ const Login = () => {
     password: "",
   });
   const [loading, setLoading] = useState(false); // Trạng thái chờ khi bấm đăng nhập
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     setCredentials({
@@ -24,12 +30,15 @@ const Login = () => {
     setLoading(true); // Bắt đầu loading
 
     try {
-      const response = await axios.post("http://localhost:8080/api/users/login", credentials);
+      const response = await axios.post(`${API_BASE_URL}/api/users/login`, credentials);
       
       if (response.status === 200) {
         // Lưu toàn bộ data (bao gồm cả role) vào localStorage
         localStorage.setItem("user", JSON.stringify(response.data));
         
+        // Đồng bộ giỏ hàng cho user này
+        dispatch({ type: "SYNC_CART" });
+
         toast.success(`Chào mừng trở lại, ${response.data.fullName || response.data.username}!`);
         
         // Điều hướng thông minh: Nếu là ADMIN thì vào thẳng trang quản trị
@@ -40,11 +49,44 @@ const Login = () => {
         }
       }
     } catch (error) {
-      const message = error.response?.data || "Tên đăng nhập hoặc mật khẩu không đúng!";
-      toast.error(message);
+      let errorMessage = "Tên đăng nhập hoặc mật khẩu không đúng!";
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      }
+      toast.error(errorMessage);
       console.error("Login Error:", error);
     } finally {
       setLoading(false); // Kết thúc loading
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!forgotEmail) {
+      return toast.error("Vui lòng nhập email của bạn!");
+    }
+    setForgotLoading(true);
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/users/forgot-password`, { email: forgotEmail });
+      toast.success(response.data || "Mật khẩu mới đã được gửi!");
+      setShowForgotPassword(false);
+      setForgotEmail("");
+    } catch (error) {
+      let errorMessage = "Lỗi khi cấp lại mật khẩu!";
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      }
+      toast.error(errorMessage);
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -77,6 +119,48 @@ const Login = () => {
                     <p className="text-muted small">Chào mừng trở lại thế giới vang thượng hạng</p>
                   </div>
                   
+                  {showForgotPassword ? (
+                    <form onSubmit={handleForgotPassword}>
+                      <p className="text-muted small text-center mb-4">Nhập email bạn đã dùng để đăng ký. Chúng tôi sẽ tạo mật khẩu mới và gửi cho bạn.</p>
+                      <div className="form-floating mb-4">
+                        <input
+                          type="email"
+                          className="form-control bg-light"
+                          id="forgotEmail"
+                          placeholder="Email"
+                          value={forgotEmail}
+                          onChange={(e) => setForgotEmail(e.target.value)}
+                          required
+                          style={{ borderRadius: "12px", border: '1px solid #eee' }}
+                        />
+                        <label htmlFor="forgotEmail" className="text-muted"><i className="fa fa-envelope me-2"></i>Email của bạn</label>
+                      </div>
+                      
+                      <button 
+                        className="btn w-100 py-3 fw-bold text-white shadow mb-3" 
+                        type="submit"
+                        disabled={forgotLoading}
+                        style={{ 
+                          borderRadius: "12px", 
+                          background: 'linear-gradient(135deg, #722f37 0%, #a04050 100%)',
+                          border: 'none',
+                          letterSpacing: '1px',
+                          transition: "all 0.3s"
+                        }}
+                      >
+                        {forgotLoading ? (
+                          <span className="spinner-border spinner-border-sm me-2"></span>
+                        ) : (
+                          "GỬI YÊU CẦU"
+                        )}
+                      </button>
+                      <div className="text-center">
+                        <button type="button" className="btn btn-link text-decoration-none" style={{ color: '#722f37' }} onClick={() => setShowForgotPassword(false)}>
+                          <i className="fa fa-arrow-left me-1"></i> Quay lại đăng nhập
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
                   <form onSubmit={handleSubmit}>
                     <div className="form-floating mb-3">
                       <input
@@ -115,7 +199,7 @@ const Login = () => {
                           Ghi nhớ
                         </label>
                       </div>
-                      <Link to="#" className="small text-decoration-none" style={{ color: '#722f37', fontWeight: '600' }}>Quên mật khẩu?</Link>
+                      <button type="button" className="btn btn-link small text-decoration-none p-0 border-0" style={{ color: '#722f37', fontWeight: '600' }} onClick={() => setShowForgotPassword(true)}>Quên mật khẩu?</button>
                     </div>
 
                     <button 
@@ -139,6 +223,7 @@ const Login = () => {
                       )}
                     </button>
                   </form>
+                  )}
 
                   <div className="text-center mt-4 pt-3 border-top">
                     <p className="small text-muted mb-0">

@@ -1,0 +1,239 @@
+﻿
+C:\Users\LIGION\.gemini\antigravity-ide\brain\88bbcfe3-0cd9-4579-90cd-f6678ba20a65\.system_generated\logs\transcript_fu
+ll.jsonl:902:{"step_index":915,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-07-03T16:09:29Z",
+"content":"Created At: 2026-07-03T16:09:29Z\nCompleted At: 2026-07-03T16:09:29Z\nFile Path: 
+`file:///d:/TTTN-WEB-WINE-main/React_E-Commerce-main/React_E-Commerce-main/src/components/Products.jsx`\nTotal Lines: 
+478\nTotal Bytes: 23009\nShowing lines 1 to 478\nThe following code has been modified to include a line number before 
+every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code 
+should remove the line number, colon, and leading space.\n1: import React, { useState, useEffect } from 'react'\n2: 
+import { useDispatch, useSelector } from \"react-redux\";\n3: import { addCart, toggleWishlist } from 
+\"../redux/action\";\n4: import { Link, useLocation } from \"react-router-dom\";\n5: import toast from 
+\"react-hot-toast\";\n6: import axios from \"axios\";\n7: import LoadingSpinner from \"./LoadingSpinner\";\n8: import 
+EmptyState from \"./EmptyState\";\n9: \n10: import Pagination from \"./Pagination\";\n11: \n12: const Products = ({ 
+isHome = false }) => {\n13:   const [data, setData] = useState([]);\n14:   const [filter, setFilter] = 
+useState([]);\n15:   const [dbCategories, setDbCategories] = useState([]);\n16:   const [loading, setLoading] = 
+useState(false);\n17:   const [searchQuery, setSearchQuery] = useState(\"\");\n18:   const [currentPage, 
+setCurrentPage] = useState(1);\n19:   const productsPerPage = 9;\n20:   const [selectedCategory, setSelectedCategory] 
+= useState(\"\");\n21:   const [selectedOrigin, setSelectedOrigin] = useState(\"\");\n22:   const [selectedBrand, 
+setSelectedBrand] = useState(\"\");\n23:   const [availability, setAvailability] = useState(\"all\");\n24:   const 
+[sortOrder, setSortOrder] = useState(\"newest\");\n25:   const [priceRange, setPriceRange] = useState(\"all\");\n26:   
+const [alcoholLevel, setAlcoholLevel] = useState(\"all\");\n27: \n28:   const dispatch = useDispatch();\n29:   const 
+wishlist = useSelector(state => state.handleWishlist);\n30:   const location = useLocation();\n31: \n32:   
+useEffect(() => {\n33:     const getProducts = async () => {\n34:       setLoading(true);\n35:       try {\n36:        
+ const res = await axios.get(\"http://localhost:8080/api/wines\");\n37:         setData(res.data || []);\n38:         
+setFilter(res.data || []);\n39:       } catch (err) {\n40:         toast.error(\"Lỗi tải dữ liệu\");\n41:       } 
+finally {\n42:         setLoading(false);\n43:       }\n44:     };\n45:     \n46:     const getCategories = async () 
+=> {\n47:       try {\n48:         const res = await axios.get(\"http://localhost:8080/api/categories\");\n49:         
+setDbCategories(res.data || []);\n50:       } catch (err) {\n51:         console.error(\"Lỗi tải danh mục:\", 
+err);\n52:       }\n53:     };\n54: \n55:     getProducts();\n56:     getCategories();\n57:   }, []);\n58: \n59:   
+useEffect(() => {\n60:     const searchParam = new URLSearchParams(location.search).get(\"search\");\n61:     
+if(searchParam) setSearchQuery(searchParam);\n62:     const catParam = new 
+URLSearchParams(location.search).get(\"category\");\n63:     if(catParam) setSelectedCategory(catParam);\n64:   }, 
+[location.search]);\n65: \n66:   // LOGIC LỌC TỔNG HỢP\n67:   useEffect(() => {\n68:     const searchStr = 
+searchQuery.toLowerCase();\n69: \n70:     let result = data.filter(p => {\n71:       const matchSearch = 
+p.name.toLowerCase().includes(searchStr) || (p.brand && p.brand.toLowerCase().includes(searchStr));\n72:       const 
+matchCategory = selectedCategory ? p.category === selectedCategory : true;\n73:       const matchOrigin = 
+selectedOrigin ? p.origin === selectedOrigin : true;\n74:       const matchBrand = selectedBrand ? p.brand === 
+selectedBrand : true;\n75:       \n76:       let matchPrice = true;\n77:       if (priceRange === \"under_1m\") 
+matchPrice = p.price < 1000000;\n78:       else if (priceRange === \"1m_to_5m\") matchPrice = p.price >= 1000000 && 
+p.price <= 5000000;\n79:       else if (priceRange === \"5m_to_10m\") matchPrice = p.price > 5000000 && p.price <= 
+10000000;\n80:       else if (priceRange === \"over_10m\") matchPrice = p.price > 10000000;\n81: \n82:       let 
+matchAlcohol = true;\n83:       const alcohol = p.alcoholContent || 0;\n84:       if (alcoholLevel === \"light\") 
+matchAlcohol = alcohol > 0 && alcohol < 12.5;\n85:       else if (alcoholLevel === \"medium\") matchAlcohol = alcohol 
+>= 12.5 && alcohol <= 14;\n86:       else if (alcoholLevel === \"strong\") matchAlcohol = alcohol > 14;\n87: \n88:     
+  const stock = p.stock ?? p.stockQuantity ?? 0;\n89:       let matchAvailability = true;\n90:       if (availability 
+=== \"in_stock\") matchAvailability = stock > 0;\n91:       else if (availability === \"out_of_stock\") 
+matchAvailability = stock === 0;\n92: \n93:       return matchSearch && matchCategory && matchPrice && matchOrigin && 
+matchBrand && matchAvailability && matchAlcohol;\n94:     });\n95: \n96:     if (sortOrder === \"price_asc\") {\n97:   
+      result.sort((a, b) => a.price - b.price);\n98:     } else if (sortOrder === \"price_desc\") {\n99:         
+result.sort((a, b) => b.price - a.price);\n100:     } else {\n101:         result.sort((a, b) => new Date(b.createdAt) 
+- new Date(a.createdAt));\n102:     }\n103: \n104:     setFilter(result);\n105:     setCurrentPage(1); // Reset to 
+first page on filter change\n106:   }, [searchQuery, selectedCategory, selectedOrigin, selectedBrand, priceRange, 
+availability, sortOrder, alcoholLevel, data]);\n107: \n108:   const buildCategoryTree = (cats, parentId = null, level 
+= 0) => {\n109:     let result = [];\n110:     const children = cats.filter(c => (c.parentId || null) === 
+parentId);\n111:     for (let child of children) {\n112:       result.push({ ...child, level });\n113:       result = 
+result.concat(buildCategoryTree(cats, child.id, level + 1));\n114:     }\n115:     return result;\n116:   };\n117: 
+\n118:   const origins = [...new Set(data.map(p => p.origin))].filter(Boolean);\n119:   const categoriesList = 
+dbCategories.length > 0 ? buildCategoryTree(dbCategories) : [];\n120:   const brands = [...new Set(data.map(p => 
+p.brand))].filter(Boolean);\n121: \n122:   const clearAllFilters = () => {\n123:       setSearchQuery(\"\");\n124:     
+  setSelectedCategory(\"\");\n125:       setSelectedOrigin(\"\");\n126:       setSelectedBrand(\"\");\n127:       
+setPriceRange(\"all\");\n128:       setAlcoholLevel(\"all\");\n129:       setAvailability(\"all\");\n130:       
+setSortOrder(\"newest\");\n131:   };\n132: \n133:   const renderProductCard = (product, colClasses) => {\n134:     
+const stock = product.stock ?? product.stockQuantity ?? 0;\n135:     const minStock = product.minimumStock || 5;\n136: 
+    const isOutOfStock = stock === 0;\n137:     const isLowStock = stock > 0 && stock <= minStock;\n138:     \n139:    
+ return (\n140:       <div key={product.id} className={colClasses}>\n141:         <div className=\"product-item 
+wine-card h-100 d-flex flex-column p-3 position-relative\">\n142:           {/* Nút yêu thích */}\n143:           
+<button \n144:             onClick={() => {\n145:                 dispatch(toggleWishlist(product));\n146:             
+    toast.success(wishlist.find(x => x.id === product.id) ? \"Đã xóa khỏi yêu thích\" : \"Đã thêm vào yêu 
+thích!\");\n147:             }}\n148:             className=\"btn position-absolute top-0 end-0 m-3 rounded-circle 
+d-flex align-items-center justify-content-center shadow-sm\"\n149:             style={{ \n150:                 width: 
+'36px', height: '36px', \n151:                 background: '#fff', zIndex: 10, border: 'none',\n152:                 
+color: wishlist.find(x => x.id === product.id) ? '#722f37' : '#ccc'\n153:             }}\n154:           >\n155:       
+      <i className={`fa ${wishlist.find(x => x.id === product.id) ? 'fa-heart' : 'fa-heart-o'}`}></i>\n156:           
+</button>\n157:           \n158:           {/* Stock Badges */}\n159:           {isOutOfStock ? (\n160:             
+<span className=\"badge position-absolute top-0 start-0 m-3 z-3\" style={{ background: 'rgba(220,53,69,0.9)', color: 
+'#fff', fontSize: '10px' }}>\n161:               HẾT HÀNG\n162:             </span>\n163:           ) : isLowStock ? 
+(\n164:             <span className=\"badge position-absolute top-0 start-0 m-3 z-3\" style={{ background: 
+'rgba(241,196,15,0.9)', color: '#000', fontSize: '10px' }}>\n165:               SẮP HẾT\n166:             
+</span>\n167:           ) : null}\n168: \n169:           {/* Discount Badge */}\n170:           
+{product.discountPercent > 0 && (\n171:             <span className=\"badge position-absolute top-0 end-0 m-3 z-3 
+shadow-sm\" style={{ background: 'linear-gradient(135deg, #d4af37, #f1c40f)', color: '#1a1a1a', fontSize: '11px', 
+fontWeight: 'bold', marginTop: '50px !important' }}>\n172:               -{product.discountPercent}%\n173:             
+</span>\n174:           )}\n175: \n176:           <Link to={`/product/${product.id}`} 
+className=\"text-decoration-none\">\n177:             <div className=\"img-container mb-3 bg-white d-flex 
+align-items-center justify-content-center rounded\" \n178:                  style={{ aspectRatio: '3/4', overflow: 
+'hidden' }}>\n179:               <img\n180:                 src={product.imageUrl}\n181:                 
+alt={product.name}\n182:                 style={{ maxWidth: \"100%\", maxHeight: \"100%\", objectFit: \"contain\", 
+transition: \"transform 0.5s ease\" }}\n183:                 onMouseOver={e => e.currentTarget.style.transform = 
+\"scale(1.05)\"}\n184:                 onMouseOut={e => e.currentTarget.style.transform = \"scale(1)\"}\n185:          
+     />\n186:             </div>\n187:           </Link>\n188: \n189:           <div className=\"text-center 
+flex-grow-1 px-1 mt-2\">\n190:             <h6 className=\"fw-bold mb-2 text-dark\" style={{ display: '-webkit-box', 
+WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '40px' }} title={product.name}>\n191:  
+             {product.name}\n192:             </h6>\n193:             <div className=\"text-muted small mb-2 d-flex 
+justify-content-center flex-wrap gap-2\">\n194:               <span><i className=\"fa fa-globe me-1\" style={{ color: 
+'#d4af37' }}></i>{product.origin}</span>\n195:               <span><i className=\"fa fa-percent me-1\" style={{ color: 
+'#d4af37' }}></i>{product.alcoholContent}%</span>\n196:             </div>\n197:             \n198:             <div 
+className=\"mb-3\">\n199:               {product.discountPercent > 0 ? (\n200:                 <div className=\"d-flex 
+flex-column align-items-center\">\n201:                   <span className=\"text-muted text-decoration-line-through 
+small\">{product.price?.toLocaleString()} đ</span>\n202:                   <span className=\"fw-bold fs-5\" style={{ 
+color: '#722f37' }}>\n203:                     {((product.price * (100 - product.discountPercent)) / 
+100).toLocaleString()} đ\n204:                   </span>\n205:                 </div>\n206:               ) : (\n207:  
+               <span className=\"fw-bold fs-5\" style={{ color: '#722f37' }}>{product.price?.toLocaleString()} 
+đ</span>\n208:               )}\n209:             </div>\n210:           </div>\n211: \n212:           <button \n213:  
+           className=\"btn btn-burgundy w-100 mt-auto py-2 fw-bold text-uppercase\"\n214:             style={{ 
+fontSize: '12px', letterSpacing: '1px', borderRadius: '8px' }}\n215:             onClick={() => { 
+dispatch(addCart(product)); toast.success(\"Đã thêm vào giỏ hàng!\"); }}\n216:             
+disabled={isOutOfStock}\n217:           >\n218:             <i className=\"fa fa-cart-plus me-2\"></i> {isOutOfStock ? 
+\"Tạm Hết Hàng\" : \"Thêm Vào Giỏ\"}\n219:           </button>\n220:         </div>\n221:       </div>\n222:     
+);\n223:   };\n224: \n225:   if (isHome) {\n226:       return (\n227:           <div className=\"container my-5 
+px-3\">\n228:               <style>{`\n229:                 .wine-card { border: 1px solid #f0f0f0; border-radius: 
+16px !important; transition: all 0.3s; background: #fff; overflow: hidden; }\n230:                 .wine-card:hover { 
+transform: translateY(-8px); box-shadow: 0 15px 30px rgba(114,47,55,0.12); border-color: rgba(212,175,55,0.3); }\n231: 
+                .btn-burgundy { background-color: #722f37; color: #fff; transition: all 0.2s ease; }\n232:             
+    .btn-burgundy:hover { background-color: #5c242c; color: #fff; }\n233:                 .btn-burgundy:disabled { 
+background-color: #ccc; border-color: #ccc; }\n234:               `}</style>\n235:               <div 
+className=\"text-center mb-5\">\n236:                  <h2 className=\"fw-bold mb-3\" style={{ color: '#1a1a1a', 
+textTransform: 'uppercase', letterSpacing: '2px' }}>Sản Phẩm Nổi Bật</h2>\n237:                  <p 
+className=\"text-muted mx-auto\" style={{ maxWidth: '600px' }}>Khám phá những chai vang đẳng cấp được yêu thích nhất 
+từ bộ sưu tập của chúng tôi.</p>\n238:                  <div style={{ width: '60px', height: '3px', background: 
+'#d4af37', margin: '20px auto' }}></div>\n239:               </div>\n240:               <div className=\"row 
+g-4\">\n241:                   {loading ? (\n242:                       <div className=\"col-12\"><LoadingSpinner 
+message=\"Đang tải bộ sưu tập rượu...\" /></div>\n243:                   ) : (\n244:                       
+filter.slice(0, 8).map(product => renderProductCard(product, \"col-12 col-sm-6 col-md-4 col-lg-3\"))\n245:             
+      )}\n246:               </div>\n247:               <div className=\"text-center mt-5\">\n248:                  
+<Link to=\"/product\" className=\"btn px-4 py-2 fw-bold text-uppercase shadow-sm\" style={{ borderRadius: '30px', 
+letterSpacing: '1px', border: '2px solid #722f37', color: '#722f37' }} onMouseOver={e => { 
+e.currentTarget.style.background = '#722f37'; e.currentTarget.style.color = '#fff'; }} onMouseOut={e => { 
+e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#722f37'; }}>\n249:                   
+  Xem Tất Cả Sản Phẩm <i className=\"fa fa-arrow-right ms-2\"></i>\n250:                  </Link>\n251:               
+</div>\n252:           </div>\n253:       );\n254:   }\n255: \n256:   return (\n257:     <div className=\"container 
+my-5 px-3\">\n258:       <style>{`\n259:         .wine-card {\n260:           border: 1px solid #f0f0f0;\n261:         
+  border-radius: 16px !important;\n262:           transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);\n263:         
+  background: #fff;\n264:           overflow: hidden;\n265:         }\n266:         .wine-card:hover {\n267:           
+transform: translateY(-8px);\n268:           box-shadow: 0 15px 30px rgba(114,47,55,0.12);\n269:           
+border-color: rgba(212,175,55,0.3);\n270:         }\n271:         .luxury-filter-box {\n272:           border-radius: 
+16px;\n273:           border: 1px solid #f0f0f0;\n274:           box-shadow: 0 5px 20px rgba(0,0,0,0.03);\n275:        
+ }\n276:         .luxury-select {\n277:           border-radius: 8px;\n278:           border: 1px solid #e0e0e0;\n279: 
+          padding: 10px 15px;\n280:           transition: all 0.2s;\n281:           cursor: pointer;\n282:         
+}\n283:         .luxury-select:focus {\n284:           border-color: #d4af37;\n285:           box-shadow: 0 0 0 
+0.25rem rgba(212, 175, 55, 0.25);\n286:         }\n287:         .custom-range::-webkit-slider-thumb {\n288:           
+background: #722f37;\n289:         }\n290:         .custom-range::-webkit-slider-thumb:active {\n291:           
+background: #d4af37;\n292:         }\n293:         .btn-burgundy {\n294:           background-color: #722f37;\n295:    
+       color: #fff;\n296:           transition: all 0.2s ease;\n297:         }\n298:         .btn-burgundy:hover 
+{\n299:           background-color: #5c242c;\n300:           color: #fff;\n301:         }\n302:         
+.btn-burgundy:disabled {\n303:           background-color: #ccc;\n304:           border-color: #ccc;\n305:         
+}\n306:       `}</style>\n307:       \n308:       <div className=\"row g-4\">\n309:         {/* 1. SIDEBAR BỘ LỌC (CỘT 
+TRÁI) */}\n310:         <div className=\"col-12 col-lg-3\">\n311:           <div className=\"bg-white p-4 rounded-4 
+shadow-sm position-sticky\" style={{ border: '1px solid #f0f0f0', top: '20px' }}>\n312:             <div 
+className=\"d-flex justify-content-between align-items-center mb-4 border-bottom pb-3\">\n313:               <h5 
+className=\"fw-bold mb-0\" style={{ color: '#1a1a1a' }}>\n314:                   <i className=\"fa fa-filter me-2\" 
+style={{ color: '#722f37' }}></i>Lọc Sản Phẩm\n315:               </h5>\n316:               {(searchQuery || 
+selectedCategory || selectedOrigin || selectedBrand || priceRange !== 'all' || availability !== 'all' || alcoholLevel 
+!== 'all') && (\n317:                   <button onClick={clearAllFilters} className=\"btn btn-sm btn-link text-danger 
+text-decoration-none p-0 fw-bold small\">\n318:                       Xóa bộ lọc\n319:                   
+</button>\n320:               )}\n321:             </div>\n322: \n323:             {/* Tìm kiếm */}\n324:             
+<div className=\"mb-4\">\n325:                 <label className=\"fw-bold small text-uppercase text-muted mb-2\"><i 
+className=\"fa fa-search me-1\"></i> Tìm kiếm</label>\n326:                 <div 
+className=\"position-relative\">\n327:                     <input \n328:                         type=\"text\" \n329:  
+                       className=\"form-control rounded-3 py-2 pe-4 bg-light border-0\" \n330:                         
+placeholder=\"Tên hoặc thương hiệu...\" \n331:                         value={searchQuery}\n332:                       
+  onChange={(e) => setSearchQuery(e.target.value)}\n333:                     />\n334:                     {searchQuery 
+&& (\n335:                         <i className=\"fa fa-times position-absolute top-50 translate-middle-y end-0 me-3 
+text-muted cursor-pointer\" \n336:                            onClick={() => setSearchQuery(\"\")} style={{ cursor: 
+'pointer' }}></i>\n337:                     )}\n338:                 </div>\n339:             </div>\n340: \n341:      
+       {/* Loại rượu */}\n342:             <div className=\"mb-4\">\n343:               <label className=\"fw-bold 
+small text-uppercase text-muted mb-2\"><i className=\"fa fa-glass me-1\"></i> Loại rượu</label>\n344:               
+<select className=\"form-select bg-light border-0 rounded-3\" value={selectedCategory} onChange={(e) => 
+setSelectedCategory(e.target.value)}>\n345:                 <option value=\"\">Tất cả</option>\n346:                 
+{categoriesList.length > 0 ? categoriesList.map(c => (\n347:                   <option key={c.id} 
+value={c.name}>\n348:                     {'\\u00A0'.repeat(c.level * 4)}{c.name}\n349:                   
+</option>\n350:                 )) : [...new Set(data.map(p => p.category))].filter(Boolean).map(c => <option key={c} 
+value={c}>{c}</option>)}\n351:               </select>\n352:             </div>\n353: \n354:             {/* Mức giá 
+*/}\n355:             <div className=\"mb-4\">\n356:               <label className=\"fw-bold small text-uppercase 
+text-muted mb-2\"><i className=\"fa fa-money me-1\"></i> Mức giá</label>\n357:               <div className=\"d-flex 
+flex-column gap-2\">\n358:                 {[\n359:                   { id: 'all', label: 'Tất cả mức giá' },\n360:    
+               { id: 'under_1m', label: 'Dưới 1 triệu' },\n361:                   { id: '1m_to_5m', label: 'Từ 1 - 5 
+triệu' },\n362:                   { id: '5m_to_10m', label: 'Từ 5 - 10 triệu' },\n363:                   { id: 
+'over_10m', label: 'Trên 10 triệu' }\n364:                 ].map((item) => (\n365:                   <div 
+className=\"form-check\" key={item.id}>\n366:                     <input className=\"form-check-input\" type=\"radio\" 
+name=\"priceRange\" id={`price_${item.id}`} value={item.id} checked={priceRange === item.id} onChange={(e) => 
+setPriceRange(e.target.value)} style={{ accentColor: '#722f37' }} />\n367:                     <label 
+className=\"form-check-label small\" htmlFor={`price_${item.id}`}>{item.label}</label>\n368:                   
+</div>\n369:                 ))}\n370:               </div>\n371:             </div>\n372: \n373:             {/* Nồng 
+độ cồn */}\n374:             <div className=\"mb-4\">\n375:               <label className=\"fw-bold small 
+text-uppercase text-muted mb-2\"><i className=\"fa fa-fire me-1\"></i> Nồng độ cồn</label>\n376:               <div 
+className=\"d-flex flex-column gap-2\">\n377:                 {[\n378:                   { id: 'all', label: 'Tất cả' 
+},\n379:                   { id: 'light', label: 'Nhẹ (Dưới 12.5%)' },\n380:                   { id: 'medium', label: 
+'Vừa (12.5% - 14%)' },\n381:                   { id: 'strong', label: 'Mạnh (Trên 14%)' }\n382:                 
+].map((item) => (\n383:                   <div className=\"form-check\" key={item.id}>\n384:                     
+<input className=\"form-check-input\" type=\"radio\" name=\"alcoholLevel\" id={`alc_${item.id}`} value={item.id} 
+checked={alcoholLevel === item.id} onChange={(e) => setAlcoholLevel(e.target.value)} style={{ accentColor: '#722f37' 
+}} />\n385:                     <label className=\"form-check-label small\" 
+htmlFor={`alc_${item.id}`}>{item.label}</label>\n386:                   </div>\n387:                 ))}\n388:         
+      </div>\n389:             </div>\n390: \n391:             {/* Xuất xứ */}\n392:             <div 
+className=\"mb-4\">\n393:               <label className=\"fw-bold small text-uppercase text-muted mb-2\"><i 
+className=\"fa fa-globe me-1\"></i> Quốc gia</label>\n394:               <select className=\"form-select bg-light 
+border-0 rounded-3\" value={selectedOrigin} onChange={(e) => setSelectedOrigin(e.target.value)}>\n395:                 
+<option value=\"\">Tất cả</option>\n396:                 {origins.map(o => <option key={o} 
+value={o}>{o}</option>)}\n397:               </select>\n398:             </div>\n399: \n400:             {/* Thương 
+hiệu */}\n401:             <div className=\"mb-4\">\n402:               <label className=\"fw-bold small 
+text-uppercase text-muted mb-2\"><i className=\"fa fa-tag me-1\"></i> Thương hiệu</label>\n403:               <select 
+className=\"form-select bg-light border-0 rounded-3\" value={selectedBrand} onChange={(e) => 
+setSelectedBrand(e.target.value)}>\n404:                 <option value=\"\">Tất cả</option>\n405:                 
+{brands.map(b => <option key={b} value={b}>{b}</option>)}\n406:               </select>\n407:             </div>\n408: 
+\n409:             {/* Trạng thái */}\n410:             <div className=\"mb-0\">\n411:               <label 
+className=\"fw-bold small text-uppercase text-muted mb-2\"><i className=\"fa fa-check-circle me-1\"></i> Trạng 
+thái</label>\n412:               <select className=\"form-select bg-light border-0 rounded-3\" value={availability} 
+onChange={(e) => setAvailability(e.target.value)}>\n413:                 <option value=\"all\">Tất cả</option>\n414:   
+              <option value=\"in_stock\">Còn hàng</option>\n415:                 <option value=\"out_of_stock\">Hết 
+hàng</option>\n416:               </select>\n417:             </div>\n418:           </div>\n419:         </div>\n420: 
+\n421:         {/* 2. KHU VỰC HIỂN THỊ SẢN PHẨM (CỘT PHẢI) */}\n422:         <div className=\"col-12 col-lg-9\">\n423: 
+          {/* Top Bar Sort & Count */}\n424:           <div className=\"bg-white p-3 rounded-4 shadow-sm mb-4 d-flex 
+flex-column flex-sm-row justify-content-between align-items-center\" style={{ border: '1px solid #f0f0f0' }}>\n425:    
+         <div className=\"mb-3 mb-sm-0 text-center text-sm-start\">\n426:               <h4 className=\"fw-bold mb-1\" 
+style={{ color: '#1a1a1a', letterSpacing: '-0.5px' }}>Khám Phá Rượu Vang</h4>\n427:               <span 
+className=\"text-muted small fw-bold\">\n428:                   Hiển thị <span style={{ color: '#722f37', fontSize: 
+'14px' }}>{filter.length}</span> sản phẩm\n429:               </span>\n430:             </div>\n431:             <div 
+className=\"d-flex align-items-center\">\n432:               <span className=\"small fw-bold text-muted me-3 
+text-nowrap\"><i className=\"fa fa-sort me-1\"></i> Sắp xếp:</span>\n433:               <select 
+className=\"form-select bg-light border-0 rounded-pill fw-semibold\" style={{ width: '200px' }} value={sortOrder} 
+onChange={(e) => setSortOrder(e.target.value)}>\n434:                 <option value=\"newest\">Mới nhất</option>\n435: 
+                <option value=\"price_asc\">Giá: Thấp - Cao</option>\n436:                 <option 
+value=\"price_desc\">Giá: Cao - Thấp</option>\n437:               </select>\n438:             </div>\n439:           
+</div>\n440: \n441:           {/* Grid Sản Phẩm */}\n442:           <div className=\"row g-4\">\n443:             
+{loading ? (\n444:               <div className=\"col-12\">\n445:                 <LoadingSpinner message=\"Đang tải 
+bộ sưu tập rượu...\" />\n446:               </div>\n447:             ) : filter.length === 0 ? (\n448:               
+<div className=\"col-12 mt-4\">\n449:                 <EmptyState \n450:                   title=\"Không tìm thấy chai 
+rượu nào\" \n451:                   message=\"Rất tiếc, không tìm thấy sản phẩm khớp với bộ lọc của bạn bên trái.\" 
+\n452:                   icon=\"fa-wine-bottle\"\n453:                 />\n454:               </div>\n455:             
+) : (\n456:               filter.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage).map(product 
+=> renderProductCard(product, \"col-12 col-sm-6 col-md-4\"))\n457:             )}\n458:           </div>\n459: \n460:  
+         {/* Phân Trang */}\n461:           {filter.length > productsPerPage && (\n462:             <div 
+className=\"mt-5\">\n463:               <Pagination \n464:                 currentPage={currentPage}\n465:             
+    totalPages={Math.ceil(filter.length / productsPerPage)}\n466:                 onPageChange={setCurrentPage}\n467:  
+               totalItems={filter.length}\n468:                 itemsPerPage={productsPerPage}\n469:               
+/>\n470:             </div>\n471:           )}\n472:         </div>\n473:       </div>\n474:     </div>\n475:   
+);\n476: };\n477: \n478: export default Products;\nThe above content shows the entire, complete file contents of the 
+requested file.\n"}
+
+

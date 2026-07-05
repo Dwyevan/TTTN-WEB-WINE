@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 
+import API_BASE_URL from '../config';
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [dbCategories, setDbCategories] = useState([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [product, setProduct] = useState({
     name: "", brand: "", price: "", description: "", origin: "",
@@ -16,14 +19,24 @@ const EditProduct = () => {
     volume: "", grapeVariety: "", sweetnessLevel: "", servingTemperature: "", foodPairing: "",
   });
 
-  const categories = ["Rượu vang đỏ", "Rượu vang trắng", "Rượu vang hồng", "Rượu sâm panh", "Whisky", "Vodka", "Brandy", "Liqueur"];
+  const buildCategoryTree = (cats, parentId = null, level = 0) => {
+    let result = [];
+    const children = cats.filter(c => (c.parentId || null) === parentId);
+    for (let child of children) {
+      result.push({ ...child, level });
+      result = result.concat(buildCategoryTree(cats, child.id, level + 1));
+    }
+    return result;
+  };
+
+  const categoriesList = dbCategories.length > 0 ? buildCategoryTree(dbCategories) : [];
   const origins = ["Pháp", "Scotland", "Nhật Bản", "Mỹ", "Ý", "Chile", "Úc", "Tây Ban Nha"];
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         if (!id) return;
-        const response = await axios.get(`http://localhost:8080/api/wines/${id}`);
+        const response = await axios.get(`${API_BASE_URL}/api/wines/${id}`);
         if (response.data) {
           setProduct({
             ...response.data,
@@ -39,7 +52,16 @@ const EditProduct = () => {
         setFetching(false);
       }
     };
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/categories`);
+        setDbCategories(res.data || []);
+      } catch (err) {
+        console.error("Lỗi tải danh mục:", err);
+      }
+    };
     fetchProduct();
+    fetchCategories();
   }, [id]);
 
   const handleChange = (e) => {
@@ -60,14 +82,35 @@ const EditProduct = () => {
         discountPercent: product.discountPercent ? parseInt(product.discountPercent) : 0,
         minimumStock: product.minimumStock ? parseInt(product.minimumStock) : 5,
       };
-      await axios.put(`http://localhost:8080/api/wines/${id}`, payload);
+      await axios.put(`${API_BASE_URL}/api/wines/${id}`, payload);
       toast.success("Cập nhật thành công!", { id: loadingToast });
       navigate("/admin/products");
     } catch (error) {
-      toast.error("Cập nhật thất bại!", { id: loadingToast });
-      console.error("Update Error:", error.response?.data);
+      console.error("Lỗi cập nhật sản phẩm:", error);
+      toast.error(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật!");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formDataFile = new FormData();
+    formDataFile.append("file", file);
+
+    setUploadingImage(true);
+    try {
+      const res = await axios.post(`${API_BASE_URL}/api/upload`, formDataFile, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      setProduct((prev) => ({ ...prev, imageUrl: res.data.url }));
+      toast.success("Tải ảnh lên thành công!");
+    } catch (error) {
+      toast.error("Không thể tải ảnh lên!");
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -123,9 +166,15 @@ const EditProduct = () => {
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-semibold text-dark">Danh mục</label>
-                    <select className="form-select py-2 px-3" style={{ borderRadius: '10px', border: '2px solid #e9ecef' }} name="category" value={product.category || ""} onChange={handleChange}>
+                    <select className="form-select py-2 px-3" style={{ borderRadius: '10px', border: '2px solid #e9ecef' }} name="category" value={product.category} onChange={handleChange} required>
                       <option value="">-- Chọn danh mục --</option>
-                      {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                      {categoriesList.length > 0 ? categoriesList.map(c => (
+                        <option key={c.id} value={c.name}>
+                          {'\u00A0'.repeat(c.level * 4)}{c.name}
+                        </option>
+                      )) : (
+                        ["Rượu vang đỏ", "Rượu vang trắng", "Rượu sâm panh", "Whisky"].map(c => <option key={c} value={c}>{c}</option>)
+                      )}
                     </select>
                   </div>
                 </div>
@@ -237,8 +286,15 @@ const EditProduct = () => {
               <div className="card-body p-4">
                 <h5 className="fw-bold mb-4"><i className="fa fa-image me-2" style={{ color: '#722f37' }}></i>Hình Ảnh</h5>
                 <div className="mb-3">
-                  <label className="form-label fw-semibold text-dark small">URL hình ảnh</label>
-                  <input type="text" className="form-control py-2 px-3 small" style={{ borderRadius: '10px', border: '2px solid #e9ecef' }} name="imageUrl" value={product.imageUrl || ""} onChange={handleChange} />
+                  <label className="form-label fw-semibold text-dark small">Hình ảnh (URL hoặc Tải lên)</label>
+                  <div className="flex-grow-1">
+                    <input type="text" className="form-control py-2 px-3 small mb-2" style={{ borderRadius: '10px', border: '2px solid #e9ecef' }} name="imageUrl" value={product.imageUrl || ""} onChange={handleChange} placeholder="Nhập link URL ảnh..." />
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="small fw-bold text-muted" style={{ fontSize: '11px' }}>HOẶC TẢI LÊN:</span>
+                      <input type="file" className="form-control form-control-sm border-0 bg-light" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
+                    </div>
+                    {uploadingImage && <small className="text-primary mt-1 d-block"><i className="fa fa-spinner fa-spin me-1"></i>Đang tải ảnh lên...</small>}
+                  </div>
                 </div>
                 <div className="position-relative rounded-3 overflow-hidden" style={{ minHeight: "280px", background: '#f8f9fa', border: '3px dashed #dee2e6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {product.imageUrl ? (

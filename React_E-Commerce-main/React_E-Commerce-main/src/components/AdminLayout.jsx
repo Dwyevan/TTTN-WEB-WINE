@@ -28,61 +28,37 @@ const AdminLayout = () => {
     // Hàm kiểm tra link đang active
     const isActive = (path) => location.pathname === path;
 
-    // Menu items với wine theme
-    const menuItems = [
-        { 
-            path: "/admin", 
-            icon: "fa-chart-line", 
-            label: "Dashboard",
-            gradient: "linear-gradient(135deg, #722f37 0%, #a04050 100%)"
+    // Menu items chia theo nhóm
+    const menuGroups = [
+        {
+            title: "TỔNG QUAN",
+            items: [
+                { path: "/admin", icon: "fa-chart-line", label: "Dashboard", gradient: "linear-gradient(135deg, #722f37 0%, #a04050 100%)" }
+            ]
         },
-        { 
-            path: "/admin/users", 
-            icon: "fa-users", 
-            label: "Khách hàng",
-            gradient: "linear-gradient(135deg, #1f4037 0%, #99f2c8 100%)"
+        {
+            title: "BÁN HÀNG",
+            items: [
+                { path: "/admin/orders", icon: "fa-shopping-cart", label: "Đơn hàng", gradient: "linear-gradient(135deg, #e07c24 0%, #f4a261 100%)" },
+                { path: "/admin/users", icon: "fa-users", label: "Khách hàng", gradient: "linear-gradient(135deg, #1f4037 0%, #99f2c8 100%)" },
+                { path: "/admin/feedbacks", icon: "fa-comments", label: "Phản hồi", gradient: "linear-gradient(135deg, #457b9d 0%, #a8dadc 100%)" }
+            ]
         },
-        { 
-            path: "/admin/orders", 
-            icon: "fa-shopping-cart", 
-            label: "Đơn hàng",
-            gradient: "linear-gradient(135deg, #e07c24 0%, #f4a261 100%)"
+        {
+            title: "SẢN PHẨM",
+            items: [
+                { path: "/admin/products", icon: "fa-wine-bottle", label: "Sản phẩm", gradient: "linear-gradient(135deg, #5a189a 0%, #7b2cbf 100%)" },
+                { path: "/admin/add-product", icon: "fa-plus-circle", label: "Thêm sản phẩm", gradient: "linear-gradient(135deg, #2d6a4f 0%, #40916c 100%)" },
+                { path: "/admin/categories", icon: "fa-tags", label: "Danh mục", gradient: "linear-gradient(135deg, #d90429 0%, #ef233c 100%)" },
+                { path: "/admin/inventory", icon: "fa-warehouse", label: "Kho hàng", gradient: "linear-gradient(135deg, #0077b6 0%, #00b4d8 100%)" },
+                { path: "/admin/coupons", icon: "fa-tags", label: "Khuyến mãi", gradient: "linear-gradient(135deg, #d4a373 0%, #e9c46a 100%)" }
+            ]
         },
-        { 
-            path: "/admin/products", 
-            icon: "fa-wine-bottle", 
-            label: "Sản phẩm",
-            gradient: "linear-gradient(135deg, #5a189a 0%, #7b2cbf 100%)"
-        },
-        { 
-            path: "/admin/add-product", 
-            icon: "fa-plus-circle", 
-            label: "Thêm sản phẩm",
-            gradient: "linear-gradient(135deg, #2d6a4f 0%, #40916c 100%)"
-        },
-        { 
-            path: "/admin/inventory", 
-            icon: "fa-warehouse", 
-            label: "Kho hàng",
-            gradient: "linear-gradient(135deg, #0077b6 0%, #00b4d8 100%)"
-        },
-        { 
-            path: "/admin/coupons", 
-            icon: "fa-tags", 
-            label: "Khuyến mãi",
-            gradient: "linear-gradient(135deg, #d4a373 0%, #e9c46a 100%)"
-        },
-        { 
-            path: "/admin/feedbacks", 
-            icon: "fa-comments", 
-            label: "Phản hồi",
-            gradient: "linear-gradient(135deg, #457b9d 0%, #a8dadc 100%)"
-        },
-        { 
-            path: "/admin/settings", 
-            icon: "fa-cogs", 
-            label: "Cài đặt",
-            gradient: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)"
+        {
+            title: "HỆ THỐNG",
+            items: [
+                { path: "/admin/settings", icon: "fa-cogs", label: "Cài đặt", gradient: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" }
+            ]
         }
     ];
 
@@ -154,52 +130,54 @@ const AdminLayout = () => {
 
                 {/* Menu Items */}
                 <div className="px-3 py-2">
-                    {!sidebarCollapsed && (
-                        <div className="text-white-50 small text-uppercase px-3 mb-2 fw-semibold">
-                            Quản lý
+                    {menuGroups.map((group, gIndex) => (
+                        <div key={gIndex} className="mb-3">
+                            {!sidebarCollapsed && (
+                                <div className="text-white-50 small text-uppercase px-3 mb-2 fw-semibold" style={{ fontSize: '11px', letterSpacing: '1px' }}>
+                                    {group.title}
+                                </div>
+                            )}
+                            <ul className="nav flex-column">
+                                {group.items.map((item, index) => (
+                                    <li className="nav-item mb-1" key={index}>
+                                        <Link 
+                                            className="nav-link d-flex align-items-center position-relative"
+                                            to={item.path}
+                                            style={{
+                                                color: isActive(item.path) ? '#fff' : 'rgba(255, 255, 255, 0.6)',
+                                                background: isActive(item.path) ? item.gradient : 'transparent',
+                                                borderRadius: '12px',
+                                                padding: sidebarCollapsed ? '12px' : '10px 16px',
+                                                transition: 'all 0.3s ease',
+                                                justifyContent: sidebarCollapsed ? 'center' : 'flex-start'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                if (!isActive(item.path)) {
+                                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                                                    e.currentTarget.style.color = '#fff';
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (!isActive(item.path)) {
+                                                    e.currentTarget.style.background = 'transparent';
+                                                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)';
+                                                }
+                                            }}
+                                        >
+                                            <i className={`fa ${item.icon}`} style={{ 
+                                                fontSize: '18px',
+                                                minWidth: '20px',
+                                                textAlign: 'center'
+                                            }}></i>
+                                            {!sidebarCollapsed && (
+                                                <span className="ms-3 fw-medium">{item.label}</span>
+                                            )}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
-                    )}
-                    <ul className="nav flex-column">
-                        {menuItems.map((item, index) => (
-                            <li className="nav-item mb-1" key={index}>
-                                <Link 
-                                    className="nav-link d-flex align-items-center position-relative"
-                                    to={item.path}
-                                    style={{
-                                        color: isActive(item.path) ? '#fff' : 'rgba(255, 255, 255, 0.6)',
-                                        background: isActive(item.path) ? item.gradient : 'transparent',
-                                        borderRadius: '12px',
-                                        padding: sidebarCollapsed ? '12px' : '12px 16px',
-                                        transition: 'all 0.3s ease',
-                                        justifyContent: sidebarCollapsed ? 'center' : 'flex-start'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        if (!isActive(item.path)) {
-                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-                                            e.currentTarget.style.color = '#fff';
-                                        }
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        if (!isActive(item.path)) {
-                                            e.currentTarget.style.background = 'transparent';
-                                            e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)';
-                                        }
-                                    }}
-                                >
-                                    <i className={`fa ${item.icon}`} style={{ 
-                                        fontSize: '18px',
-                                        minWidth: '20px'
-                                    }}></i>
-                                    {!sidebarCollapsed && (
-                                        <span className="ms-3">{item.label}</span>
-                                    )}
-                                    {isActive(item.path) && !sidebarCollapsed && (
-                                        <i className="fa fa-chevron-right ms-auto small"></i>
-                                    )}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
+                    ))}
                 </div>
 
                 {/* Bottom Actions */}
@@ -269,7 +247,7 @@ const AdminLayout = () => {
                     <div className="d-flex align-items-center justify-content-between px-4 py-3">
                         <div>
                             <h5 className="mb-0 fw-bold text-dark">
-                                {menuItems.find(item => isActive(item.path))?.label || 'Dashboard'}
+                                {menuGroups.flatMap(g => g.items).find(item => isActive(item.path))?.label || 'Dashboard'}
                             </h5>
                             <small className="text-muted">
                                 <i className="fa fa-calendar-alt me-1"></i>

@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Navbar, Footer } from "../components";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 
+import API_BASE_URL from '../config';
 const PaymentResult = () => {
   const [status, setStatus] = useState("processing"); // processing, success, failed
   const [message, setMessage] = useState("Đang xử lý kết quả giao dịch...");
@@ -18,9 +19,9 @@ const PaymentResult = () => {
       let verifyEndpoint = "";
 
       if (searchParams.has("vnp_SecureHash")) {
-        verifyEndpoint = `http://localhost:8080/api/payments/verify/vnpay${location.search}`;
+        verifyEndpoint = `${API_BASE_URL}/api/payments/verify/vnpay${location.search}`;
       } else if (searchParams.has("signature") && searchParams.has("partnerCode")) {
-        verifyEndpoint = `http://localhost:8080/api/payments/verify/momo${location.search}`;
+        verifyEndpoint = `${API_BASE_URL}/api/payments/verify/momo${location.search}`;
       } else {
         setStatus("failed");
         setMessage("Không tìm thấy thông tin giao dịch hợp lệ.");

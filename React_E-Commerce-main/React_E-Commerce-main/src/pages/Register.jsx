@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Footer, Navbar } from "../components";
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
+import API_BASE_URL from '../config';
 const Register = () => {
     const [formData, setFormData] = useState({
         username: '',
@@ -39,15 +40,22 @@ const Register = () => {
             // Loại bỏ confirmPassword trước khi gửi về Backend
             const { confirmPassword, ...dataToSend } = formData;
             
-            const response = await axios.post("http://localhost:8080/api/users/register", dataToSend);
+            const response = await axios.post(`${API_BASE_URL}/api/users/register`, dataToSend);
             
             if (response.status === 201 || response.status === 200) {
                 toast.success("Đăng ký tài khoản thành công! Vui lòng đăng nhập.");
                 navigate("/login");
             }
         } catch (error) {
-            const message = error.response?.data || "Đăng ký thất bại, tên đăng nhập hoặc email đã tồn tại!";
-            toast.error(message);
+            let errorMessage = "Đăng ký thất bại, tên đăng nhập hoặc email đã tồn tại!";
+            if (error.response?.data) {
+                if (typeof error.response.data === 'string') {
+                    errorMessage = error.response.data;
+                } else if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+            }
+            toast.error(errorMessage);
             console.error("Register Error:", error);
         } finally {
             setLoading(false);

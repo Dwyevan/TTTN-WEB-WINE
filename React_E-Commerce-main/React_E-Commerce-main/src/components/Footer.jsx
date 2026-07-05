@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
+import API_BASE_URL from '../config';
 const Footer = () => {
   const [storeInfo, setStoreInfo] = useState({
     STORE_NAME: 'Wine Store',
@@ -13,7 +14,7 @@ const Footer = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/settings");
+        const res = await axios.get(`${API_BASE_URL}/api/settings`);
         if (res.data) {
           setStoreInfo({
             STORE_NAME: res.data.STORE_NAME || 'Wine Store',

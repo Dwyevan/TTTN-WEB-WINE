@@ -7,3 +7,8 @@ export { default as ConfirmModal } from './ConfirmModal';
 export { default as Pagination } from './Pagination';
 export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as EmptyState } from './EmptyState';
+export { default as Categories } from './Categories';
+export { default as BestSellers } from './BestSellers';
+export { default as PairingGuide } from './PairingGuide';
+export { default as FeaturedWine } from './FeaturedWine';
+export { default as Newsletter } from './Newsletter';

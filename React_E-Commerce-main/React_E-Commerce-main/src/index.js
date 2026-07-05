@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import axios from "axios";
 import "../node_modules/font-awesome/css/font-awesome.min.css";
@@ -6,6 +6,7 @@ import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"; // Thêm Navigate
 import { Provider } from "react-redux";
 import store from "./redux/store";
+import API_BASE_URL from './config';
 
 import {
   Home,
@@ -32,7 +33,8 @@ import {
   AdminInventory,
   Wishlist,
   AdminUserList,
-  AdminSettings
+  AdminSettings,
+  AdminCategory
 } from "./pages";
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -82,7 +84,7 @@ const AppProvider = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/wines");
+        const res = await axios.get(`${API_BASE_URL}/api/wines`);
         setProducts(res.data);
       } catch (err) {
         console.error("Lỗi lấy dữ liệu:", err);
@@ -133,6 +135,7 @@ const AppProvider = () => {
               <Route path="feedbacks" element={<AdminFeedbackList />} />
               <Route path="coupons" element={<AdminCouponList />} />
               <Route path="settings" element={<AdminSettings />} />
+              <Route path="categories" element={<AdminCategory />} />
             </Route>
 
             {/* 404 ROUTES */}
@@ -195,7 +198,7 @@ root.render(<AppProvider />);
 //   const fetchProducts = async () => {
 //     try {
 //       // Đảm bảo đường dẫn là /api/wines thay vì /api/products
-//       const res = await axios.get("http://localhost:8080/api/wines");
+//       const res = await axios.get(`${API_BASE_URL}/api/wines`);
 //       setProducts(res.data);
 //     } catch (err) {
 //       console.error("Lỗi lấy dữ liệu:", err);

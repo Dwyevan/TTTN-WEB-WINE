@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+﻿import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ConfirmModal, Pagination, LoadingSpinner, EmptyState } from "../components";
 
+import API_BASE_URL from '../config';
 const AdminProductList = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +20,7 @@ const AdminProductList = () => {
 
   const getProducts = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/wines");
+      const res = await axios.get(`${API_BASE_URL}/api/wines`);
       setProducts(res.data);
     } catch (error) {
       toast.error("Không thể tải danh sách sản phẩm");
@@ -40,7 +41,7 @@ const AdminProductList = () => {
 
     const loadingToast = toast.loading("Đang xóa...");
     try {
-      await axios.delete(`http://localhost:8080/api/wines/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/wines/${id}`);
       toast.success("Đã xóa thành công!", { id: loadingToast });
       setProducts(products.filter((p) => p.id !== id));
     } catch (error) {
@@ -53,7 +54,7 @@ const AdminProductList = () => {
     const newState = !currentEnabled;
     const loadingToast = toast.loading(newState ? "Đang kích hoạt..." : "Đang ẩn...");
     try {
-      await axios.patch(`http://localhost:8080/api/admin/inventory/${id}/toggle-status?enabled=${newState}`);
+      await axios.patch(`${API_BASE_URL}/api/admin/inventory/${id}/toggle-status?enabled=${newState}`);
       toast.success(newState ? "Đã kích hoạt sản phẩm" : "Đã ẩn sản phẩm", { id: loadingToast });
       setProducts(products.map(p => p.id === id ? { ...p, enabled: newState } : p));
     } catch (error) {

@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Footer, Navbar } from "../components";
 import { useSelector, useDispatch } from "react-redux";
 import { addCart, delCart } from "../redux/action";
@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
+import API_BASE_URL from '../config';
 const Cart = () => {
   const state = useSelector((state) => state.handleCart);
   const dispatch = useDispatch();
@@ -19,7 +20,7 @@ const Cart = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/settings");
+        const res = await axios.get(`${API_BASE_URL}/api/settings`);
         if (res.data) {
           setShippingConfig({
             SHIPPING_THRESHOLD: parseInt(res.data.FREE_SHIPPING_THRESHOLD) || 2000000,

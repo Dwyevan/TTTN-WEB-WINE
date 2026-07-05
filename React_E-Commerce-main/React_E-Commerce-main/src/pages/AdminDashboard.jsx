@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from 'xlsx';
@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { Doughnut, Bar } from 'react-chartjs-2';
 
+import API_BASE_URL from '../config';
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
 const AdminDashboard = () => {
@@ -16,7 +17,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/admin/dashboard/stats");
+        const res = await axios.get(`${API_BASE_URL}/api/admin/dashboard/stats`);
         setStats(res.data);
       } catch (err) {
         console.error("Lỗi khi lấy dữ liệu dashboard:", err);
@@ -33,7 +34,7 @@ const AdminDashboard = () => {
     const loadingToast = toast.loading("Đang thu thập dữ liệu...");
     try {
       // 1. Fetch toàn bộ orders (Không chỉ limit những order gần đây)
-      const res = await axios.get("http://localhost:8080/api/orders");
+      const res = await axios.get(`${API_BASE_URL}/api/orders`);
       const orders = res.data;
       
       if (!orders || orders.length === 0) {

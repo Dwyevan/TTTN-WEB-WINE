@@ -1,5 +1,6 @@
-import axios from "axios";
+﻿import axios from "axios";
 
+import API_BASE_URL from '../config';
 // Lấy sessionId từ localStorage (nếu chưa có thì tự sinh ra)
 const getSessionId = () => {
   let sessionId = localStorage.getItem("chatbot_session");
@@ -15,7 +16,7 @@ export const askSommelier = async (userQuestion, products) => {
     const sessionId = getSessionId();
     
     // Gọi API sang Backend Spring Boot (Dialogflow)
-    const response = await axios.post("http://localhost:8080/api/chatbot/ask", {
+    const response = await axios.post(`${API_BASE_URL}/api/chatbot/ask`, {
       sessionId: sessionId,
       message: userQuestion
     });

@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useMemo } from "react";
+﻿import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { ConfirmModal, Pagination, LoadingSpinner, EmptyState } from "../components";
 
+import API_BASE_URL from '../config';
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +17,7 @@ const AdminOrders = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:8080/api/orders");
+      const response = await axios.get(`${API_BASE_URL}/api/orders`);
       const sortedOrders = response.data.sort((a, b) => b.id - a.id);
       setOrders(sortedOrders);
     } catch (error) {
@@ -75,7 +76,7 @@ const AdminOrders = () => {
   const handleUpdateStatus = async (orderId, newStatus) => {
     const loadingToast = toast.loading("Đang cập nhật...");
     try {
-      await axios.patch(`http://localhost:8080/api/orders/${orderId}/status?status=${newStatus}`);
+      await axios.patch(`${API_BASE_URL}/api/orders/${orderId}/status?status=${newStatus}`);
       const sc = statusConfig[newStatus] || {};
       toast.success(`Đơn #${orderId} → ${sc.label || newStatus}`, { id: loadingToast });
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
@@ -95,7 +96,7 @@ const AdminOrders = () => {
     
     const loadingToast = toast.loading("Đang xóa...");
     try {
-      await axios.delete(`http://localhost:8080/api/orders/${orderId}`);
+      await axios.delete(`${API_BASE_URL}/api/orders/${orderId}`);
       toast.success("Xóa thành công", { id: loadingToast });
       setOrders(prev => prev.filter(o => o.id !== orderId));
     } catch (error) {

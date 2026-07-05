@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
+import API_BASE_URL from '../config';
 const AdminSettings = () => {
     const [settings, setSettings] = useState({
         SHIPPING_FEE: '0',
@@ -20,7 +21,7 @@ const AdminSettings = () => {
 
     const fetchSettings = async () => {
         try {
-            const res = await axios.get("http://localhost:8080/api/settings");
+            const res = await axios.get(`${API_BASE_URL}/api/settings`);
             setSettings({
                 SHIPPING_FEE: res.data.SHIPPING_FEE || '0',
                 FREE_SHIPPING_THRESHOLD: res.data.FREE_SHIPPING_THRESHOLD || '0',
@@ -53,7 +54,7 @@ const AdminSettings = () => {
         setSaving(true);
         const loadingToast = toast.loading("Đang lưu cài đặt...");
         try {
-            await axios.put("http://localhost:8080/api/settings", settings);
+            await axios.put(`${API_BASE_URL}/api/settings`, settings);
             toast.success("Đã lưu cấu hình hệ thống thành công!", { id: loadingToast });
         } catch (error) {
             toast.error("Lưu cấu hình thất bại!", { id: loadingToast });

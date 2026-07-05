@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
+import API_BASE_URL from '../config';
 const AddProduct = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [dbCategories, setDbCategories] = useState([]);
   const [wine, setWine] = useState({
     name: "",
     brand: "",
@@ -32,6 +34,18 @@ const AddProduct = () => {
     setWine({ ...wine, [e.target.name]: e.target.value });
   };
 
+  React.useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/categories`);
+        setDbCategories(res.data || []);
+      } catch (err) {
+        console.error("Lỗi tải danh mục:", err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -45,7 +59,7 @@ const AddProduct = () => {
         discountPercent: wine.discountPercent ? parseInt(wine.discountPercent) : 0,
         minimumStock: wine.minimumStock ? parseInt(wine.minimumStock) : 5,
       };
-      await axios.post("http://localhost:8080/api/wines", payload);
+      await axios.post(`${API_BASE_URL}/api/wines`, payload);
       toast.success("Thêm rượu mới thành công!", { id: loadingToast });
       navigate("/admin/products");
     } catch (error) {
@@ -60,8 +74,18 @@ const AddProduct = () => {
     setWine({ name: "", brand: "", price: "", description: "", origin: "", alcoholContent: "", imageUrl: "", category: "", stockQuantity: "", discountPercent: "", minimumStock: "5" });
   };
 
+  const buildCategoryTree = (cats, parentId = null, level = 0) => {
+    let result = [];
+    const children = cats.filter(c => (c.parentId || null) === parentId);
+    for (let child of children) {
+      result.push({ ...child, level });
+      result = result.concat(buildCategoryTree(cats, child.id, level + 1));
+    }
+    return result;
+  };
+
+  const categoriesList = dbCategories.length > 0 ? buildCategoryTree(dbCategories) : [];
   const quickOrigins = ["Pháp", "Scotland", "Nhật Bản", "Mỹ", "Ý", "Chile", "Úc", "Tây Ban Nha"];
-  const categories = ["Rượu vang đỏ", "Rượu vang trắng", "Rượu vang hồng", "Rượu sâm panh", "Whisky", "Vodka", "Brandy", "Liqueur"];
 
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -106,7 +130,13 @@ const AddProduct = () => {
                     <label className="form-label fw-semibold text-dark">Danh mục <span className="text-danger">*</span></label>
                     <select className="form-select py-2 px-3" style={{ borderRadius: '10px', border: '2px solid #e9ecef' }} name="category" value={wine.category} onChange={handleChange} required>
                       <option value="">-- Chọn danh mục --</option>
-                      {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                      {categoriesList.length > 0 ? categoriesList.map(c => (
+                        <option key={c.id} value={c.name}>
+                          {'\u00A0'.repeat(c.level * 4)}{c.name}
+                        </option>
+                      )) : (
+                        ["Rượu vang đỏ", "Rượu vang trắng", "Rượu sâm panh", "Whisky"].map(c => <option key={c} value={c}>{c}</option>)
+                      )}
                     </select>
                   </div>
                 </div>

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { ConfirmModal, LoadingSpinner, EmptyState } from "../components";
 
+import API_BASE_URL from '../config';
 const AdminFeedbackList = () => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +16,7 @@ const AdminFeedbackList = () => {
   const fetchFeedbacks = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:8080/api/feedbacks");
+      const res = await axios.get(`${API_BASE_URL}/api/feedbacks`);
       setFeedbacks(res.data);
     } catch (err) {
       toast.error("Không thể tải danh sách phản hồi!");
@@ -37,7 +38,7 @@ const AdminFeedbackList = () => {
     if (!id) return;
     const loadingToast = toast.loading("Đang xóa...");
     try {
-      await axios.delete(`http://localhost:8080/api/feedbacks/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/feedbacks/${id}`);
       toast.success("Đã xóa phản hồi thành công", { id: loadingToast });
       setFeedbacks(feedbacks.filter((item) => item.id !== id));
     } catch (err) {
@@ -51,7 +52,7 @@ const AdminFeedbackList = () => {
     setSending(true);
     const loadingToast = toast.loading("Đang gửi phản hồi...");
     try {
-      await axios.post(`http://localhost:8080/api/feedbacks/reply`, {
+      await axios.post(`${API_BASE_URL}/api/feedbacks/reply`, {
         id: selectedFeedback.id,
         email: selectedFeedback.email,
         subject: `Phản hồi từ WineStore về: ${selectedFeedback.subject}`,

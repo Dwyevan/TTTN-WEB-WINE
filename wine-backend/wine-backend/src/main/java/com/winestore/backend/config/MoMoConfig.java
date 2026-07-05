@@ -22,10 +22,10 @@ public class MoMoConfig {
     @Value("${momo.endpoint:https://test-payment.momo.vn/v2/gateway/api/create}")
     private String endpoint;
 
-    @Value("${momo.returnUrl:http://localhost:3000/payment/result}")
+    @Value("${momo.returnUrl:${VNPAY_RETURN_URL:http://localhost:3000/payment/result}}")
     private String returnUrl;
 
-    @Value("${momo.notifyUrl:http://localhost:8080/api/payment/notify/momo}")
+    @Value("${momo.notifyUrl:${MOMO_NOTIFY_URL:http://localhost:8080/api/payment/notify/momo}}")
     private String notifyUrl;
 
     public String getPartnerCode() { return partnerCode; }

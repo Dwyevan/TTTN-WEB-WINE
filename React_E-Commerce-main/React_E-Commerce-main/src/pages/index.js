@@ -27,3 +27,4 @@ export { default as AdminInventory } from './AdminInventory';
 export { default as Wishlist } from './Wishlist';
 export { default as AdminUserList } from './AdminUserList';
 export { default as AdminSettings } from './AdminSettings';
+export { default as AdminCategory } from './AdminCategory';

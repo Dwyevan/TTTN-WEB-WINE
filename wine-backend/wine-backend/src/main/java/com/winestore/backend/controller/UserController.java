@@ -18,6 +18,7 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final com.winestore.backend.service.EmailService emailService;
 
     // Đăng ký tài khoản mới
     @PostMapping("/register")
@@ -26,7 +27,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("Lỗi: Tên đăng nhập đã tồn tại!");
         }
         if (userRepository.existsByEmail(user.getEmail())) {
-            return ResponseEntity.badRequest().body("Lỗi: Email đã được sử dụng!");
+            return ResponseEntity.badRequest().body("Lỗi: Email đã tồn tại hoặc có người đăng ký email này!");
         }
 
         // Mặc định vai trò là CUSTOMER nếu không chỉ định
@@ -104,5 +105,26 @@ public class UserController {
             userRepository.save(user);
             return ResponseEntity.ok().body("Đổi mật khẩu thành công!");
         }).orElse(ResponseEntity.notFound().build());
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody java.util.Map<String, String> request) {
+        String email = request.get("email");
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("Lỗi: Email không tồn tại trong hệ thống!");
+        }
+        
+        User user = userOpt.get();
+        String newPassword = "WS" + (int)(Math.random() * 900000 + 100000);
+        user.setPassword(newPassword);
+        userRepository.save(user);
+        
+        try {
+            emailService.sendNewPasswordEmail(email, newPassword);
+            return ResponseEntity.ok().body("Mật khẩu mới đã được gửi đến email của bạn.");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Lỗi: Không thể gửi email, vui lòng kiểm tra cấu hình SMTP.");
+        }
     }
 }

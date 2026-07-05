@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { Footer, Navbar } from "../components";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 
+import API_BASE_URL from '../config';
 const Checkout = () => {
   const state = useSelector((state) => state.handleCart);
   
@@ -31,6 +32,10 @@ const Checkout = () => {
     SHIPPING_FEE: 35000
   });
 
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+
   useEffect(() => {
     if (user) {
       const names = user.fullName ? user.fullName.split(" ") : ["", ""];
@@ -46,7 +51,7 @@ const Checkout = () => {
 
     const fetchSettings = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/settings");
+        const res = await axios.get(`${API_BASE_URL}/api/settings`);
         if (res.data) {
           setShippingConfig({
             SHIPPING_THRESHOLD: parseInt(res.data.FREE_SHIPPING_THRESHOLD) || 2000000,
@@ -67,7 +72,36 @@ const Checkout = () => {
 
   const subtotal = state.reduce((acc, item) => acc + (item.price * item.qty), 0);
   const shipping = subtotal > shippingConfig.SHIPPING_THRESHOLD ? 0 : shippingConfig.SHIPPING_FEE;
-  const totalAmount = subtotal + shipping;
+  
+  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const totalAmount = subtotal + shipping - discountAmount;
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Vui lòng nhập mã giảm giá");
+      return;
+    }
+    setIsApplyingCoupon(true);
+    try {
+      const res = await axios.post(`${API_BASE_URL}/api/coupons/validate`, {
+        code: couponCode.trim(),
+        orderTotal: subtotal
+      });
+      setAppliedCoupon(res.data);
+      toast.success("Áp dụng mã giảm giá thành công!");
+    } catch (err) {
+      setAppliedCoupon(null);
+      toast.error(err.response?.data || "Mã giảm giá không hợp lệ");
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    toast.success("Đã gỡ mã giảm giá");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -98,17 +132,26 @@ const Checkout = () => {
 
     try {
       // 1. Tạo đơn hàng với trạng thái PENDING
-      const response = await axios.post('http://localhost:8080/api/orders', orderPayload);
+      const response = await axios.post(`${API_BASE_URL}/api/orders`, orderPayload);
       
       if (response.status === 201 || response.status === 200) {
         const orderId = response.data.id;
+        
+        // Đánh dấu mã giảm giá đã được sử dụng
+        if (appliedCoupon && appliedCoupon.couponId) {
+          try {
+            await axios.post(`${API_BASE_URL}/api/coupons/${appliedCoupon.couponId}/use`);
+          } catch (err) {
+            console.error("Lỗi khi cập nhật lượt dùng mã giảm giá", err);
+          }
+        }
         
         // 2. Nếu thanh toán VNPAY hoặc MOMO, gọi API tạo URL
         if (formData.paymentMethod === 'VNPAY' || formData.paymentMethod === 'MOMO') {
           toast.dismiss(loadingToast);
           toast.loading(`Đang chuyển hướng đến ${formData.paymentMethod}...`);
           
-          const paymentRes = await axios.post(`http://localhost:8080/api/payments/create`, {
+          const paymentRes = await axios.post(`${API_BASE_URL}/api/payments/create`, {
             orderId: orderId,
             paymentMethod: formData.paymentMethod
           });
@@ -362,17 +405,59 @@ const Checkout = () => {
                     ))}
                   </div>
 
-                  <div className="border-top pt-4">
+                  {/* KHOẢNG NHẬP MÃ GIẢM GIÁ */}
+                  <div className="border-top pt-3 pb-3">
+                    <h6 className="fw-bold mb-3" style={{ color: '#1a1a1a' }}>Mã giảm giá (Coupon)</h6>
+                    {!appliedCoupon ? (
+                      <div className="d-flex gap-2">
+                        <input 
+                          type="text" 
+                          className="form-control luxury-input text-uppercase" 
+                          placeholder="Nhập mã giảm giá..." 
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        />
+                        <button 
+                          className="btn btn-dark fw-bold px-4 rounded-3" 
+                          onClick={applyCoupon}
+                          disabled={isApplyingCoupon || !couponCode.trim()}
+                        >
+                          {isApplyingCoupon ? "..." : "ÁP DỤNG"}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="d-flex justify-content-between align-items-center p-2 rounded-3 border" style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }}>
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="fa fa-check-circle text-success fs-5"></i>
+                          <div>
+                            <div className="fw-bold text-success">{appliedCoupon.code}</div>
+                            <small className="text-muted">Đã áp dụng thành công</small>
+                          </div>
+                        </div>
+                        <button className="btn btn-sm btn-outline-danger border-0" onClick={removeCoupon}>
+                          <i className="fa fa-times"></i> Gỡ
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border-top pt-3">
                     <div className="d-flex justify-content-between mb-2 text-muted">
                       <span>Tạm tính</span>
                       <span className="fw-bold text-dark">{subtotal.toLocaleString()} đ</span>
                     </div>
-                    <div className="d-flex justify-content-between mb-3 text-muted">
+                    <div className="d-flex justify-content-between mb-2 text-muted">
                       <span>Phí giao hàng</span>
                       <span className={shipping === 0 ? "fw-bold" : "fw-bold text-dark"} style={{ color: shipping === 0 ? '#28a745' : '' }}>
                         {shipping === 0 ? "Miễn phí" : `${shipping.toLocaleString()} đ`}
                       </span>
                     </div>
+                    {appliedCoupon && (
+                      <div className="d-flex justify-content-between mb-3 text-success fw-bold">
+                        <span>Chiết khấu (Mã giảm giá)</span>
+                        <span>- {appliedCoupon.discountAmount.toLocaleString()} đ</span>
+                      </div>
+                    )}
                     <div className="d-flex justify-content-between align-items-center p-3 rounded-3 mt-3" style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)' }}>
                       <span className="fw-bold text-uppercase" style={{ color: '#1a1a1a', letterSpacing: '1px' }}>Tổng Cộng</span>
                       <span className="fw-bold fs-4" style={{ color: '#722f37' }}>{totalAmount.toLocaleString()} đ</span>
